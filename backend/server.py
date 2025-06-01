@@ -87,8 +87,21 @@ processing_status = ProcessingStatus(status="idle", message="Ready to process re
 async def startup_event():
     """Initialize clients on startup"""
     global qdrant_client_instance, embedding_model
+    global qdrant_client, SentenceTransformer, Distance, VectorParams, PointStruct
     
     try:
+        # Lazy import of dependencies
+        import qdrant_client as qc
+        from qdrant_client.models import Distance as Dist, VectorParams as VP, PointStruct as PS
+        from sentence_transformers import SentenceTransformer as ST
+        
+        # Assign to global variables
+        qdrant_client = qc
+        Distance = Dist
+        VectorParams = VP
+        PointStruct = PS
+        SentenceTransformer = ST
+        
         # Initialize Qdrant client (in-memory mode)
         qdrant_client_instance = qdrant_client.QdrantClient(":memory:")
         logger.info("Connected to Qdrant (in-memory)")
