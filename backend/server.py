@@ -17,10 +17,14 @@ import shutil
 import base64
 
 # Third-party imports for RAG
-import qdrant_client
-from qdrant_client.models import Distance, VectorParams, PointStruct
-from sentence_transformers import SentenceTransformer
 import tiktoken
+
+# Lazy imports - will be loaded during startup
+qdrant_client = None
+SentenceTransformer = None
+Distance = None
+VectorParams = None
+PointStruct = None
 
 # Setup logging
 logging.basicConfig(level=logging.INFO)
