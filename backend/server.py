@@ -65,7 +65,7 @@ class RepositoryProcessRequest(BaseModel):
 class CodeSuggestionRequest(BaseModel):
     query: str
     context: Optional[str] = None
-    suggestion_type: str = "general"  # general, bugfix, feature
+    suggestion_type: str = "general"  # general, bugfix, feature, security, performance, documentation, refactor
 
 class CodeChunk(BaseModel):
     id: str
