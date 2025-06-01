@@ -444,6 +444,114 @@ function App() {
           </div>
         )}
 
+        {activeTab === 'analytics' && (
+          <div className="analytics-section">
+            <div className="section-card">
+              <h2 className="section-title">Code Analytics & Insights</h2>
+              
+              {processingStatus?.status !== 'completed' ? (
+                <div className="analytics-disabled">
+                  <p>Please process a repository first to enable code analytics.</p>
+                </div>
+              ) : (
+                <div className="analytics-interface">
+                  {/* Code Quality Analysis */}
+                  <div className="analytics-card">
+                    <div className="analytics-header">
+                      <h3>Code Quality Analysis</h3>
+                      <button 
+                        className="btn btn-secondary"
+                        onClick={analyzeCodeQuality}
+                        disabled={loading}
+                      >
+                        {loading ? 'Analyzing...' : 'Analyze Quality'}
+                      </button>
+                    </div>
+                    
+                    {codeQuality && (
+                      <div className="quality-results">
+                        <div className="quality-metrics">
+                          <div className="metric-item">
+                            <span className="metric-label">Total Files</span>
+                            <span className="metric-value">{codeQuality.total_files}</span>
+                          </div>
+                          <div className="metric-item">
+                            <span className="metric-label">Python Functions</span>
+                            <span className="metric-value">{codeQuality.total_functions}</span>
+                          </div>
+                          <div className="metric-item">
+                            <span className="metric-label">Python Classes</span>
+                            <span className="metric-value">{codeQuality.total_classes}</span>
+                          </div>
+                          <div className="metric-item">
+                            <span className="metric-label">Ansible Tasks</span>
+                            <span className="metric-value">{codeQuality.total_tasks}</span>
+                          </div>
+                        </div>
+                        
+                        {codeQuality.recommendations.length > 0 && (
+                          <div className="recommendations">
+                            <h4>Recommendations</h4>
+                            <ul>
+                              {codeQuality.recommendations.map((rec, index) => (
+                                <li key={index}>{rec}</li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                  
+                  {/* Similar Code Search */}
+                  <div className="analytics-card">
+                    <div className="analytics-header">
+                      <h3>Similar Code Pattern Search</h3>
+                    </div>
+                    
+                    <div className="form-group">
+                      <label className="form-label">Code Snippet</label>
+                      <textarea
+                        className="form-textarea"
+                        value={similarCodeQuery}
+                        onChange={(e) => setSimilarCodeQuery(e.target.value)}
+                        placeholder="Paste code snippet to find similar patterns..."
+                        rows={6}
+                      />
+                    </div>
+                    
+                    <button 
+                      className="btn btn-primary"
+                      onClick={searchSimilarCode}
+                      disabled={loading || !similarCodeQuery.trim()}
+                    >
+                      {loading ? 'Searching...' : 'Find Similar Code'}
+                    </button>
+                    
+                    {similarCodeResults && (
+                      <div className="similar-results">
+                        <h4>Found {similarCodeResults.total_found} Similar Patterns</h4>
+                        {similarCodeResults.similar_patterns.map((pattern, index) => (
+                          <div key={index} className="similar-pattern">
+                            <div className="pattern-meta">
+                              <span className="pattern-file">{pattern.file_path}</span>
+                              <span className="pattern-type">{pattern.chunk_type}</span>
+                              <span className="pattern-score">
+                                Similarity: {(pattern.similarity_score * 100).toFixed(1)}%
+                              </span>
+                            </div>
+                            <pre className="pattern-code">{pattern.content}</pre>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
         {activeTab === 'chat' && (
           <div className="chat-section">
             <div className="section-card">
