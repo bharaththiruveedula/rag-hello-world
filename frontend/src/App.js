@@ -297,7 +297,56 @@ function App() {
     );
   };
 
-  const renderSuggestions = () => {
+  const renderJiraSuggestions = () => {
+    if (!suggestions) return null;
+
+    return (
+      <div className="suggestions-result">
+        <div className="suggestion-header">
+          <h3 className="text-lg font-semibold">JIRA Code Suggestion</h3>
+          <span className="suggestion-type">{suggestionType}</span>
+        </div>
+        
+        {suggestions.jira_ticket && (
+          <div className="jira-ticket-info">
+            <h4>Ticket: {suggestions.jira_ticket.ticket_id}</h4>
+            <p><strong>Title:</strong> {suggestions.jira_ticket.title}</p>
+            <p><strong>Type:</strong> {suggestions.jira_ticket.issue_type}</p>
+            <p><strong>Status:</strong> {suggestions.jira_ticket.status}</p>
+            {suggestions.jira_ticket.assignee && (
+              <p><strong>Assignee:</strong> {suggestions.jira_ticket.assignee}</p>
+            )}
+          </div>
+        )}
+        
+        <div className="suggestion-content">
+          <div className="suggestion-text">
+            {suggestions.suggestion.split('\n').map((line, index) => (
+              <div key={index} className={line.startsWith('```') ? 'code-block' : 'text-line'}>
+                {line}
+              </div>
+            ))}
+          </div>
+        </div>
+        
+        {suggestions.context_chunks && suggestions.context_chunks.length > 0 && (
+          <div className="context-chunks">
+            <h4 className="context-header">Referenced Code Context</h4>
+            {suggestions.context_chunks.map((chunk, index) => (
+              <div key={index} className="context-item">
+                <div className="context-meta">
+                  <span className="context-file">{chunk.file_path}</span>
+                  <span className="context-type">{chunk.chunk_type}</span>
+                  <span className="context-score">Score: {chunk.score.toFixed(3)}</span>
+                </div>
+                <pre className="context-code">{chunk.content}</pre>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  };
     if (!suggestions) return null;
 
     return (
