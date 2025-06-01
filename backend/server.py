@@ -829,6 +829,101 @@ Content:
 """)
     return "\n".join(formatted)
 
+async def get_jira_code_suggestions(ticket_id: str, suggestion_type: str = "general") -> CodeSuggestionResponse:
+    """Get code suggestions based on JIRA ticket"""
+    try:
+        # Fetch JIRA ticket information
+        jira_ticket = await fetch_jira_ticket(ticket_id)
+        
+        # Create comprehensive query from JIRA ticket
+        query_parts = []
+        if jira_ticket.title:
+            query_parts.append(f"Title: {jira_ticket.title}")
+        if jira_ticket.description:
+            query_parts.append(f"Description: {jira_ticket.description}")
+        if jira_ticket.issue_type:
+            query_parts.append(f"Type: {jira_ticket.issue_type}")
+        
+        query = "\n".join(query_parts)
+        
+        # Check if we have any data first
+        if qdrant_client_instance is None:
+            raise HTTPException(status_code=500, detail="Vector database not initialized")
+        
+        # Check if collection exists and has data
+        try:
+            collection_info = qdrant_client_instance.get_collection("code_chunks")
+            if collection_info.points_count == 0:
+                return CodeSuggestionResponse(
+                    suggestion=f"""## JIRA Ticket Analysis: {jira_ticket.ticket_id}
+
+**Issue**: {jira_ticket.title}
+**Type**: {jira_ticket.issue_type}
+**Status**: {jira_ticket.status}
+
+I've analyzed your JIRA ticket but don't have any repository code processed yet to provide specific suggestions based on your codebase.
+
+**For {suggestion_type} assistance with this ticket:**
+1. First, ensure your repository is processed 
+2. Once your code is analyzed, I can provide specific suggestions based on your actual Ansible roles and Python modules
+3. I'll be able to reference relevant code patterns for this specific issue
+
+**General recommendations for "{jira_ticket.title}":**
+- Review existing similar implementations in your codebase
+- Consider security implications if this involves infrastructure changes
+- Plan for testing and rollback procedures
+- Document any configuration changes needed
+
+To get AI-powered code suggestions specific to your codebase, please ensure repository processing is completed.""",
+                    context_chunks=[],
+                    jira_ticket=jira_ticket,
+                    query=query,
+                    suggestion_type=suggestion_type,
+                    status="no_repository_processed"
+                )
+        except Exception as e:
+            logger.warning(f"Collection check failed: {e}")
+        
+        # Get regular code suggestions with JIRA context
+        suggestions_result = await get_code_suggestions(query, suggestion_type)
+        
+        # Enhance the suggestion with JIRA context
+        enhanced_suggestion = f"""## JIRA Ticket Analysis: {jira_ticket.ticket_id}
+
+**Issue**: {jira_ticket.title}
+**Type**: {jira_ticket.issue_type}  
+**Status**: {jira_ticket.status}
+**Assigned**: {jira_ticket.assignee or "Unassigned"}
+
+---
+
+{suggestions_result['suggestion']}
+
+---
+
+**Next Steps for Ticket {jira_ticket.ticket_id}:**
+1. Review the suggested code implementations above
+2. Test changes in a development environment
+3. Update the JIRA ticket with implementation progress
+4. Consider adding automated tests for the changes
+5. Plan deployment and rollback strategies
+"""
+
+        return CodeSuggestionResponse(
+            suggestion=enhanced_suggestion,
+            context_chunks=suggestions_result.get('context_chunks', []),
+            jira_ticket=jira_ticket,
+            query=query,
+            suggestion_type=suggestion_type,
+            status="success"
+        )
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"JIRA code suggestion error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 # API Routes
 @app.get("/api/health")
 async def health_check():
