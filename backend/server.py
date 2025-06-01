@@ -45,12 +45,21 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Configuration
-OLLAMA_BASE_URL = "http://localhost:11434"
-QDRANT_URL = "localhost"
-QDRANT_PORT = 6333
-DEFAULT_MODEL = "codellama:7b"
+# Configuration from environment variables
+OLLAMA_BASE_URL = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
+DEFAULT_MODEL = os.getenv("OLLAMA_MODEL", "codellama:7b")
 EMBEDDING_MODEL = "all-MiniLM-L6-v2"
+
+# GitLab Configuration
+GITLAB_URL = os.getenv("GITLAB_URL", "https://gitlab.com")
+GITLAB_API_TOKEN = os.getenv("GITLAB_API_TOKEN")
+GITLAB_REPOSITORY_PATH = os.getenv("GITLAB_REPOSITORY_PATH")
+GITLAB_BRANCH = os.getenv("GITLAB_BRANCH", "main")
+
+# JIRA Configuration
+JIRA_BASE_URL = os.getenv("JIRA_BASE_URL")
+JIRA_USERNAME = os.getenv("JIRA_USERNAME")
+JIRA_API_TOKEN = os.getenv("JIRA_API_TOKEN")
 
 # Global clients
 qdrant_client_instance = None
