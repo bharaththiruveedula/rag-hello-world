@@ -788,7 +788,7 @@ async def search_similar_code(request: dict):
             raise HTTPException(status_code=400, detail="Code snippet required")
         
         # Generate embedding for the code snippet
-        snippet_embedding = embedding_model.encode(code_snippet).tolist()
+        snippet_embedding = await generate_embedding(code_snippet)
         
         # Search for similar code
         search_results = qdrant_client_instance.search(
