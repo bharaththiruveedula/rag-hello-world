@@ -855,12 +855,31 @@ async def analyze_code_quality():
 async def search_similar_code(request: dict):
     """Find similar code patterns"""
     try:
-        if processing_status.status != "completed":
-            raise HTTPException(status_code=400, detail="Repository not processed yet")
-        
         code_snippet = request.get("code_snippet", "")
         if not code_snippet:
             raise HTTPException(status_code=400, detail="Code snippet required")
+        
+        if qdrant_client_instance is None:
+            raise HTTPException(status_code=500, detail="Vector database not initialized")
+        
+        # Check if collection exists and has data
+        try:
+            collection_info = qdrant_client_instance.get_collection("code_chunks")
+            if collection_info.points_count == 0:
+                return {
+                    "query_snippet": code_snippet,
+                    "similar_patterns": [],
+                    "total_found": 0,
+                    "message": "No repository processed yet. Process a repository first to search for similar code patterns."
+                }
+        except Exception as e:
+            logger.warning(f"Collection check failed: {e}")
+            return {
+                "query_snippet": code_snippet,
+                "similar_patterns": [],
+                "total_found": 0,
+                "error": f"Could not access code data: {str(e)}"
+            }
         
         # Generate embedding for the code snippet
         snippet_embedding = await generate_embedding(code_snippet)
