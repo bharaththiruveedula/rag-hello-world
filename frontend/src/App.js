@@ -80,23 +80,23 @@ function App() {
     setLoading(false);
   };
 
-  const getSuggestions = async () => {
-    if (!query.trim()) return;
+  const getJiraSuggestions = async () => {
+    if (!jiraTicketId.trim()) return;
     
     setLoading(true);
     try {
-      const response = await fetch(`${API_BASE}/api/suggest`, {
+      const response = await fetch(`${API_BASE}/api/jira-suggest`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          query: query,
+          ticket_id: jiraTicketId,
           suggestion_type: suggestionType
         })
       });
       const result = await response.json();
       setSuggestions(result);
     } catch (error) {
-      console.error('Suggestion error:', error);
+      console.error('JIRA suggestion error:', error);
     }
     setLoading(false);
   };
