@@ -587,10 +587,10 @@ function App() {
                     
                     <button 
                       className="btn btn-primary"
-                      onClick={getSuggestions}
-                      disabled={loading || !query.trim()}
+                      onClick={getJiraSuggestions}
+                      disabled={loading || !jiraTicketId.trim()}
                     >
-                      {loading ? 'Getting Suggestions...' : 'Get Suggestions'}
+                      {loading ? 'Getting Suggestions...' : 'Get JIRA Suggestions'}
                     </button>
                   </div>
                   
