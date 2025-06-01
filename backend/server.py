@@ -772,8 +772,36 @@ async def get_repository_info():
 async def analyze_code_quality():
     """Analyze overall code quality metrics"""
     try:
-        if processing_status.status != "completed":
-            raise HTTPException(status_code=400, detail="Repository not processed yet")
+        if qdrant_client_instance is None:
+            raise HTTPException(status_code=500, detail="Vector database not initialized")
+        
+        # Check if collection exists and has data
+        try:
+            collection_info = qdrant_client_instance.get_collection("code_chunks")
+            if collection_info.points_count == 0:
+                return {
+                    "message": "No repository processed yet",
+                    "total_files": 0,
+                    "total_functions": 0,
+                    "total_classes": 0,
+                    "total_tasks": 0,
+                    "complexity_analysis": {},
+                    "recommendations": [
+                        "Process a repository first to get code quality analysis",
+                        "Go to Setup tab and configure GitLab repository",
+                        "Click 'Process Repository' to analyze your code"
+                    ]
+                }
+        except Exception as e:
+            logger.warning(f"Collection check failed: {e}")
+            return {
+                "error": f"Could not access code data: {str(e)}",
+                "total_files": 0,
+                "total_functions": 0,
+                "total_classes": 0,
+                "total_tasks": 0,
+                "recommendations": ["Please process a repository first"]
+            }
         
         # Get all chunks for analysis
         search_results = qdrant_client_instance.scroll(
@@ -813,6 +841,9 @@ async def analyze_code_quality():
         
         if analysis["total_tasks"] > 100:
             analysis["recommendations"].append("Large number of tasks detected - consider role decomposition")
+            
+        if analysis["total_files"] == 0:
+            analysis["recommendations"].append("No code files detected - ensure repository contains Ansible roles or Python modules")
         
         return analysis
         
