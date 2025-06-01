@@ -52,8 +52,7 @@ function App() {
     try {
       const response = await fetch(`${API_BASE}/api/test-connections`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(gitlabConfig)
+        headers: { 'Content-Type': 'application/json' }
       });
       const results = await response.json();
       setConnectionStatus(results);
@@ -70,7 +69,7 @@ function App() {
       const response = await fetch(`${API_BASE}/api/process-repository`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ config: gitlabConfig })
+        body: JSON.stringify({ force_reprocess: false })
       });
       const result = await response.json();
       console.log('Processing started:', result);
