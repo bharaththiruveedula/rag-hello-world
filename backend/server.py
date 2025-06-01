@@ -840,15 +840,18 @@ async def get_status():
     return processing_status
 
 @app.post("/api/test-connections")
-async def test_connections(config: GitLabConfig):
-    """Test all external connections"""
+async def test_connections():
+    """Test all external connections using environment configuration"""
     results = {}
     
     # Test OLLAMA
     results["ollama"] = await test_ollama_connection()
     
-    # Test GitLab
-    results["gitlab"] = await test_gitlab_connection(config)
+    # Test GitLab  
+    results["gitlab"] = await test_gitlab_connection()
+    
+    # Test JIRA
+    results["jira"] = await test_jira_connection()
     
     # Test Qdrant
     try:
@@ -861,16 +864,26 @@ async def test_connections(config: GitLabConfig):
 
 @app.post("/api/process-repository")
 async def process_repository(request: RepositoryProcessRequest, background_tasks: BackgroundTasks):
-    """Start processing repository in background"""
+    """Start processing repository using environment configuration"""
     global processing_status
     
-    if processing_status.status == "processing":
+    if processing_status.status == "processing" and not request.force_reprocess:
         raise HTTPException(status_code=400, detail="Repository processing already in progress")
     
     processing_status = ProcessingStatus(status="starting", message="Initializing repository processing...")
-    background_tasks.add_task(process_repository_background, request.config)
+    background_tasks.add_task(process_repository_background)
     
     return {"message": "Repository processing started", "status": processing_status}
+
+@app.post("/api/jira-suggest")
+async def jira_suggest(request: JiraTicketRequest):
+    """Get code suggestions based on JIRA ticket"""
+    try:
+        result = await get_jira_code_suggestions(request.ticket_id, request.suggestion_type)
+        return result
+    except Exception as e:
+        logger.error(f"JIRA suggestion error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/api/suggest")
 async def suggest_code(request: CodeSuggestionRequest):
