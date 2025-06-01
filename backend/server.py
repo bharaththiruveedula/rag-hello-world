@@ -74,11 +74,33 @@ class GitLabConfig(BaseModel):
 
 class RepositoryProcessRequest(BaseModel):
     config: GitLabConfig
+    force_reprocess: bool = False  # Option to force reprocess even if already processed
+
+class JiraTicketRequest(BaseModel):
+    ticket_id: str  # e.g., "PROJ-123"
+    suggestion_type: str = "general"  # general, bugfix, feature, security, performance, documentation, refactor
+
+class JiraTicketInfo(BaseModel):
+    ticket_id: str
+    title: str
+    description: str
+    issue_type: str
+    status: str
+    assignee: Optional[str] = None
+    reporter: Optional[str] = None
 
 class CodeSuggestionRequest(BaseModel):
     query: str
     context: Optional[str] = None
     suggestion_type: str = "general"  # general, bugfix, feature, security, performance, documentation, refactor
+
+class CodeSuggestionResponse(BaseModel):
+    suggestion: str
+    context_chunks: List[Dict[str, Any]]
+    jira_ticket: Optional[JiraTicketInfo] = None
+    query: str
+    suggestion_type: str
+    status: str = "success"
 
 class CodeChunk(BaseModel):
     id: str
