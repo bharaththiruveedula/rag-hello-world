@@ -15,6 +15,10 @@ from pathlib import Path
 import tempfile
 import shutil
 import base64
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
 
 # Third-party imports for RAG
 import tiktoken
