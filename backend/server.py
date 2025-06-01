@@ -85,12 +85,9 @@ async def startup_event():
     global qdrant_client_instance, embedding_model
     
     try:
-        # Initialize Qdrant client
-        qdrant_client_instance = qdrant_client.QdrantClient(
-            url=QDRANT_URL,
-            port=QDRANT_PORT,
-        )
-        logger.info("Connected to Qdrant")
+        # Initialize Qdrant client (in-memory mode)
+        qdrant_client_instance = qdrant_client.QdrantClient(":memory:")
+        logger.info("Connected to Qdrant (in-memory)")
         
         # Initialize embedding model
         embedding_model = SentenceTransformer(EMBEDDING_MODEL)
