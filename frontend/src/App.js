@@ -4,17 +4,11 @@ import './App.css';
 const API_BASE = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
 
 function App() {
-  const [activeTab, setActiveTab] = useState('setup');
-  const [gitlabConfig, setGitlabConfig] = useState({
-    gitlab_url: 'https://gitlab.com',
-    api_token: '',
-    repository_path: '',
-    branch: 'main'
-  });
+  const [activeTab, setActiveTab] = useState('process');
   const [connectionStatus, setConnectionStatus] = useState(null);
   const [processingStatus, setProcessingStatus] = useState(null);
   const [repositoryInfo, setRepositoryInfo] = useState(null);
-  const [query, setQuery] = useState('');
+  const [jiraTicketId, setJiraTicketId] = useState('');
   const [suggestionType, setSuggestionType] = useState('general');
   const [suggestions, setSuggestions] = useState(null);
   const [loading, setLoading] = useState(false);
