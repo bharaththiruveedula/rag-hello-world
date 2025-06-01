@@ -133,6 +133,40 @@ async def startup_event():
     except Exception as e:
         logger.error(f"Startup error: {e}")
 
+def simple_text_embedding(text: str) -> List[float]:
+    """Simple fallback embedding using text hashing"""
+    import hashlib
+    import numpy as np
+    
+    # Create a hash of the text
+    text_hash = hashlib.md5(text.encode()).hexdigest()
+    
+    # Convert hash to numbers and create a 384-dimensional vector
+    hash_numbers = [ord(c) for c in text_hash]
+    
+    # Pad or truncate to 384 dimensions
+    vector = hash_numbers * (384 // len(hash_numbers) + 1)
+    vector = vector[:384]
+    
+    # Normalize the vector
+    vector = np.array(vector, dtype=float)
+    norm = np.linalg.norm(vector)
+    if norm > 0:
+        vector = vector / norm
+    
+    return vector.tolist()
+
+async def generate_embedding(text: str) -> List[float]:
+    """Generate embedding using available method"""
+    if embedding_model is not None:
+        try:
+            return embedding_model.encode(text).tolist()
+        except Exception as e:
+            logger.warning(f"Embedding model error: {e}, falling back to simple embedding")
+    
+    # Fallback to simple embedding
+    return simple_text_embedding(text)
+
 async def test_ollama_connection():
     """Test OLLAMA connection"""
     try:
