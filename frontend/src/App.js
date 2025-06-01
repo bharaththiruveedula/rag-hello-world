@@ -181,6 +181,25 @@ function App() {
           )}
         </div>
 
+        {/* JIRA Status */}
+        <div className={`status-item ${connectionStatus.jira?.status === 'connected' ? 'success' : 'error'}`}>
+          <div className="status-header">
+            <span className="status-icon">🎫</span>
+            <span>JIRA</span>
+            <span className={`status-badge ${connectionStatus.jira?.status === 'connected' ? 'success' : 'error'}`}>
+              {connectionStatus.jira?.status || 'error'}
+            </span>
+          </div>
+          {connectionStatus.jira?.user && (
+            <div className="status-details">
+              User: {connectionStatus.jira.user}, Account: {connectionStatus.jira.account_id}
+            </div>
+          )}
+          {connectionStatus.jira?.message && (
+            <div className="status-error">{connectionStatus.jira.message}</div>
+          )}
+        </div>
+
         {/* Qdrant Status */}
         <div className={`status-item ${connectionStatus.qdrant?.status === 'connected' ? 'success' : 'error'}`}>
           <div className="status-header">
