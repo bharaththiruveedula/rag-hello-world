@@ -358,54 +358,14 @@ function App() {
       </nav>
 
       <main className="main-content">
-        {activeTab === 'setup' && (
-          <div className="setup-section">
+        {activeTab === 'process' && (
+          <div className="process-section">
             <div className="section-card">
-              <h2 className="section-title">GitLab Configuration</h2>
-              
-              <div className="form-group">
-                <label className="form-label">GitLab URL</label>
-                <input
-                  type="text"
-                  className="form-input"
-                  value={gitlabConfig.gitlab_url}
-                  onChange={(e) => setGitlabConfig({...gitlabConfig, gitlab_url: e.target.value})}
-                  placeholder="https://gitlab.com"
-                />
-              </div>
-              
-              <div className="form-group">
-                <label className="form-label">API Token</label>
-                <input
-                  type="password"
-                  className="form-input"
-                  value={gitlabConfig.api_token}
-                  onChange={(e) => setGitlabConfig({...gitlabConfig, api_token: e.target.value})}
-                  placeholder="your-gitlab-api-token"
-                />
-              </div>
-              
-              <div className="form-group">
-                <label className="form-label">Repository Path</label>
-                <input
-                  type="text"
-                  className="form-input"
-                  value={gitlabConfig.repository_path}
-                  onChange={(e) => setGitlabConfig({...gitlabConfig, repository_path: e.target.value})}
-                  placeholder="username/repository-name"
-                />
-              </div>
-              
-              <div className="form-group">
-                <label className="form-label">Branch</label>
-                <input
-                  type="text"
-                  className="form-input"
-                  value={gitlabConfig.branch}
-                  onChange={(e) => setGitlabConfig({...gitlabConfig, branch: e.target.value})}
-                  placeholder="main"
-                />
-              </div>
+              <h2 className="section-title">Repository Processing</h2>
+              <p className="section-description">
+                Process your GitLab repository to enable AI-powered code suggestions. 
+                Repository configuration is loaded from environment variables.
+              </p>
               
               <div className="button-group">
                 <button 
@@ -419,7 +379,7 @@ function App() {
                 <button 
                   className="btn btn-primary"
                   onClick={processRepository}
-                  disabled={loading || !gitlabConfig.api_token || !gitlabConfig.repository_path}
+                  disabled={loading}
                 >
                   {loading ? 'Processing...' : 'Process Repository'}
                 </button>
@@ -427,6 +387,62 @@ function App() {
             </div>
             
             {renderConnectionStatus()}
+          </div>
+        )}
+
+        {activeTab === 'jira' && (
+          <div className="jira-section">
+            <div className="section-card">
+              <h2 className="section-title">JIRA Code Assistant</h2>
+              
+              {processingStatus?.status !== 'completed' ? (
+                <div className="jira-disabled">
+                  <p>Please process a repository first to enable JIRA-based code suggestions.</p>
+                </div>
+              ) : (
+                <div className="jira-interface">
+                  <div className="query-section">
+                    <div className="form-group">
+                      <label className="form-label">Suggestion Type</label>
+                      <select
+                        className="form-select"
+                        value={suggestionType}
+                        onChange={(e) => setSuggestionType(e.target.value)}
+                      >
+                        <option value="general">General Help</option>
+                        <option value="bugfix">Bug Fix</option>
+                        <option value="feature">New Feature</option>
+                        <option value="security">Security Analysis</option>
+                        <option value="performance">Performance Optimization</option>
+                        <option value="documentation">Documentation</option>
+                        <option value="refactor">Code Refactoring</option>
+                      </select>
+                    </div>
+                    
+                    <div className="form-group">
+                      <label className="form-label">JIRA Ticket ID</label>
+                      <input
+                        className="form-input"
+                        type="text"
+                        value={jiraTicketId}
+                        onChange={(e) => setJiraTicketId(e.target.value)}
+                        placeholder="e.g., PROJ-123"
+                      />
+                    </div>
+                    
+                    <button 
+                      className="btn btn-primary"
+                      onClick={getJiraSuggestions}
+                      disabled={loading || !jiraTicketId.trim()}
+                    >
+                      {loading ? 'Getting Suggestions...' : 'Get JIRA Suggestions'}
+                    </button>
+                  </div>
+                  
+                  {renderJiraSuggestions()}
+                </div>
+              )}
+            </div>
           </div>
         )}
 
