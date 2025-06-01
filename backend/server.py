@@ -454,8 +454,8 @@ async def fetch_repository_contents() -> List[Dict[str, Any]]:
     
     return all_files
 
-async def process_repository_background(config: GitLabConfig):
-    """Background task to process repository"""
+async def process_repository_background():
+    """Background task to process repository using environment configuration"""
     global processing_status
     
     try:
@@ -463,7 +463,7 @@ async def process_repository_background(config: GitLabConfig):
         processing_status.message = "Fetching repository contents..."
         
         # Fetch repository contents
-        files = await fetch_repository_contents(config)
+        files = await fetch_repository_contents()
         processing_status.total_files = len(files)
         
         processing_status.status = "parsing"
