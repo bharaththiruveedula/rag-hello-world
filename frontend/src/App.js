@@ -353,7 +353,7 @@ function App() {
       </header>
 
       <nav className="tab-navigation">
-        {['setup', 'status', 'chat'].map((tab) => (
+        {['setup', 'status', 'analytics', 'chat'].map((tab) => (
           <button
             key={tab}
             className={`tab-button ${activeTab === tab ? 'active' : ''}`}
