@@ -623,7 +623,7 @@ function App() {
                     </button>
                   </div>
                   
-                  {renderSuggestions()}
+                  {renderJiraSuggestions()}
                 </div>
               )}
             </div>
