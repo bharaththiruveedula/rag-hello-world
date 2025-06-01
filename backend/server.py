@@ -93,22 +93,28 @@ async def startup_event():
         # Lazy import of dependencies
         import qdrant_client as qc
         from qdrant_client.models import Distance as Dist, VectorParams as VP, PointStruct as PS
-        from sentence_transformers import SentenceTransformer as ST
         
         # Assign to global variables
         qdrant_client = qc
         Distance = Dist
         VectorParams = VP
         PointStruct = PS
-        SentenceTransformer = ST
         
         # Initialize Qdrant client (in-memory mode)
         qdrant_client_instance = qdrant_client.QdrantClient(":memory:")
         logger.info("Connected to Qdrant (in-memory)")
         
-        # Initialize embedding model
-        embedding_model = SentenceTransformer(EMBEDDING_MODEL)
-        logger.info(f"Loaded embedding model: {EMBEDDING_MODEL}")
+        # Use a simple embedding approach for now
+        try:
+            from sentence_transformers import SentenceTransformer as ST
+            SentenceTransformer = ST
+            embedding_model = SentenceTransformer(EMBEDDING_MODEL)
+            logger.info(f"Loaded embedding model: {EMBEDDING_MODEL}")
+        except Exception as e:
+            logger.warning(f"Could not load SentenceTransformer: {e}")
+            # Fallback to simple text hashing for demo
+            embedding_model = None
+            logger.info("Using simple text embedding fallback")
         
         # Create collection if it doesn't exist
         try:
