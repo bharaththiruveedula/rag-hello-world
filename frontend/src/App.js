@@ -575,12 +575,12 @@ function App() {
                     </div>
                     
                     <div className="form-group">
-                      <label className="form-label">Your Question</label>
+                      <label className="form-label">JIRA Ticket ID</label>
                       <textarea
                         className="form-textarea"
-                        value={query}
-                        onChange={(e) => setQuery(e.target.value)}
-                        placeholder="Ask about your Ansible roles or Python modules..."
+                        value={jiraTicketId}
+                        onChange={(e) => setJiraTicketId(e.target.value)}
+                        placeholder="Enter JIRA ticket ID..."
                         rows={4}
                       />
                     </div>
