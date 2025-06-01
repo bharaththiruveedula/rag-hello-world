@@ -681,11 +681,55 @@ async def process_repository(request: RepositoryProcessRequest, background_tasks
 @app.post("/api/suggest")
 async def suggest_code(request: CodeSuggestionRequest):
     """Get code suggestions"""
-    if processing_status.status != "completed":
-        raise HTTPException(status_code=400, detail="Repository not processed yet")
-    
-    result = await get_code_suggestions(request.query, request.suggestion_type)
-    return result
+    try:
+        # Check if we have any data first
+        if qdrant_client_instance is None:
+            raise HTTPException(status_code=500, detail="Vector database not initialized")
+        
+        # Check if collection exists and has data
+        try:
+            collection_info = qdrant_client_instance.get_collection("code_chunks")
+            if collection_info.points_count == 0:
+                # Return a helpful message instead of error for better UX
+                return {
+                    "suggestion": f"""I understand you're asking about: "{request.query}"
+
+However, I don't have any repository code processed yet to provide specific suggestions based on your codebase.
+
+Here are some general recommendations for your query type ({request.suggestion_type}):
+
+**For {request.suggestion_type} assistance:**
+1. First, process a repository using the Setup tab
+2. Once your code is analyzed, I can provide specific suggestions based on your actual codebase patterns
+3. I'll be able to reference your existing Ansible roles and Python modules for contextual help
+
+To get started:
+- Go to the Setup tab
+- Enter your GitLab credentials and repository details  
+- Click "Process Repository"
+- Return here for AI-powered code suggestions!""",
+                    "context_chunks": [],
+                    "query": request.query,
+                    "suggestion_type": request.suggestion_type,
+                    "status": "no_repository_processed"
+                }
+        except Exception as e:
+            logger.warning(f"Collection check failed: {e}")
+            # Create collection if it doesn't exist
+            try:
+                qdrant_client_instance.create_collection(
+                    collection_name="code_chunks",
+                    vectors_config=VectorParams(size=384, distance=Distance.COSINE),
+                )
+            except Exception as create_error:
+                logger.error(f"Failed to create collection: {create_error}")
+        
+        result = await get_code_suggestions(request.query, request.suggestion_type)
+        return result
+        
+    except Exception as e:
+        logger.error(f"Suggestion endpoint error: {e}")
+        raise HTTPException(status_code=500, detail=f"Suggestion generation failed: {str(e)}")
 
 @app.get("/api/repository-info")
 async def get_repository_info():
