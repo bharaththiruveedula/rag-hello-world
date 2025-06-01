@@ -416,7 +416,7 @@ async def process_repository_background(config: GitLabConfig):
                     embed_text = f"File: {chunk.file_path}\nType: {chunk.chunk_type}\nContent:\n{chunk.content}"
                     
                     # Generate embedding
-                    embedding = embedding_model.encode(embed_text).tolist()
+                    embedding = await generate_embedding(embed_text)
                     
                     # Create point for Qdrant
                     point = PointStruct(
