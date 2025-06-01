@@ -435,40 +435,8 @@ async def get_code_suggestions(query: str, suggestion_type: str = "general", lim
             }
             context_chunks.append(chunk_info)
         
-        # Create prompt based on suggestion type
-        if suggestion_type == "bugfix":
-            prompt = f"""You are an expert Ansible and Python developer. Based on the following code context, help identify and fix the bug described in this query: {query}
-
-Relevant Code Context:
-{format_context_for_prompt(context_chunks)}
-
-Please provide:
-1. Analysis of the potential bug
-2. Specific code fix with explanations
-3. Best practices to prevent similar issues
-
-Response:"""
-        elif suggestion_type == "feature":
-            prompt = f"""You are an expert Ansible and Python developer. Based on the following code context, help implement the new feature described in this query: {query}
-
-Relevant Code Context:
-{format_context_for_prompt(context_chunks)}
-
-Please provide:
-1. Implementation approach
-2. Code examples following existing patterns
-3. Integration considerations with existing code
-
-Response:"""
-        else:
-            prompt = f"""You are an expert Ansible and Python developer. Based on the following code context, provide helpful suggestions for this query: {query}
-
-Relevant Code Context:
-{format_context_for_prompt(context_chunks)}
-
-Please provide relevant code suggestions, explanations, and best practices.
-
-Response:"""
+        # Create enhanced prompts based on suggestion type
+        prompt = create_enhanced_prompt(query, suggestion_type, context_chunks)
         
         # Call OLLAMA
         async with httpx.AsyncClient(timeout=120.0) as client:
@@ -502,6 +470,117 @@ Response:"""
     except Exception as e:
         logger.error(f"Code suggestion error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+def create_enhanced_prompt(query: str, suggestion_type: str, context_chunks: List[Dict]) -> str:
+    """Create enhanced prompts for different suggestion types"""
+    context_text = format_context_for_prompt(context_chunks)
+    
+    base_context = f"""You are an expert Ansible and Python developer with deep knowledge of infrastructure automation, configuration management, and DevOps best practices.
+
+Relevant Code Context:
+{context_text}
+
+Query: {query}
+"""
+    
+    if suggestion_type == "bugfix":
+        return f"""{base_context}
+
+Task: Analyze the code for potential bugs and provide fixes.
+
+Please provide:
+1. **Bug Analysis**: Identify the specific issue and root cause
+2. **Code Fix**: Provide corrected code with explanations
+3. **Testing Strategy**: How to verify the fix works
+4. **Prevention**: Best practices to avoid similar issues
+
+Focus on common Ansible and Python pitfalls like variable scoping, task dependencies, error handling, and type issues.
+
+Response:"""
+
+    elif suggestion_type == "feature":
+        return f"""{base_context}
+
+Task: Help implement a new feature following existing code patterns.
+
+Please provide:
+1. **Implementation Plan**: Step-by-step approach
+2. **Code Examples**: Following existing patterns and conventions
+3. **Integration Points**: How it fits with existing code
+4. **Testing Considerations**: Unit and integration test suggestions
+
+Ensure the solution is maintainable, follows Ansible best practices, and integrates well.
+
+Response:"""
+
+    elif suggestion_type == "security":
+        return f"""{base_context}
+
+Task: Analyze code for security vulnerabilities and provide hardening suggestions.
+
+Please provide:
+1. **Security Analysis**: Identify potential vulnerabilities
+2. **Hardening Recommendations**: Specific security improvements
+3. **Secure Code Examples**: Demonstrate secure patterns
+4. **Compliance Notes**: Industry standard compliance considerations
+
+Focus on common security issues like credential exposure, privilege escalation, input validation, and secure communications.
+
+Response:"""
+
+    elif suggestion_type == "performance":
+        return f"""{base_context}
+
+Task: Analyze code for performance optimization opportunities.
+
+Please provide:
+1. **Performance Analysis**: Identify bottlenecks and inefficiencies
+2. **Optimization Strategies**: Specific improvements with rationale
+3. **Optimized Code**: Demonstrate better performing alternatives
+4. **Monitoring Suggestions**: How to measure performance improvements
+
+Focus on Ansible task efficiency, Python code optimization, and infrastructure resource usage.
+
+Response:"""
+
+    elif suggestion_type == "documentation":
+        return f"""{base_context}
+
+Task: Generate comprehensive documentation for the code.
+
+Please provide:
+1. **Code Documentation**: Clear comments and docstrings
+2. **Usage Examples**: How to use the code effectively
+3. **Configuration Guide**: Parameter explanations and examples
+4. **Troubleshooting**: Common issues and solutions
+
+Follow documentation best practices for both Ansible and Python.
+
+Response:"""
+
+    elif suggestion_type == "refactor":
+        return f"""{base_context}
+
+Task: Suggest code refactoring improvements for maintainability and readability.
+
+Please provide:
+1. **Refactoring Analysis**: Areas for improvement
+2. **Improved Code Structure**: Better organized, more maintainable code
+3. **Design Patterns**: Applicable patterns for better architecture
+4. **Migration Strategy**: How to safely implement changes
+
+Focus on code organization, reusability, maintainability, and following best practices.
+
+Response:"""
+
+    else:  # general
+        return f"""{base_context}
+
+Task: Provide helpful code suggestions and explanations.
+
+Please provide relevant code suggestions, explanations, and best practices for Ansible roles and Python modules.
+
+Response:"""
 
 def format_context_for_prompt(context_chunks: List[Dict]) -> str:
     """Format context chunks for LLM prompt"""
