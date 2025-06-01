@@ -454,7 +454,7 @@ async def get_code_suggestions(query: str, suggestion_type: str = "general", lim
     """Get code suggestions using RAG"""
     try:
         # Generate query embedding
-        query_embedding = embedding_model.encode(query).tolist()
+        query_embedding = await generate_embedding(query)
         
         # Search in Qdrant
         search_results = qdrant_client_instance.search(
