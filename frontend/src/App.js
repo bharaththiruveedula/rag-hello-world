@@ -18,6 +18,9 @@ function App() {
   const [suggestionType, setSuggestionType] = useState('general');
   const [suggestions, setSuggestions] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [codeQuality, setCodeQuality] = useState(null);
+  const [similarCodeQuery, setSimilarCodeQuery] = useState('');
+  const [similarCodeResults, setSimilarCodeResults] = useState(null);
 
   // Poll for processing status
   useEffect(() => {
