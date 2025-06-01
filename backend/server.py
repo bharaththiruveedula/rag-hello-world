@@ -400,15 +400,18 @@ class AnsibleCodeParser:
             logger.warning(f"Python parsing error in {file_path}: {e}")
         return chunks
 
-async def fetch_repository_contents(config: GitLabConfig) -> List[Dict[str, Any]]:
-    """Fetch repository contents from GitLab"""
-    headers = {"Authorization": f"Bearer {config.api_token}"}
+async def fetch_repository_contents() -> List[Dict[str, Any]]:
+    """Fetch repository contents from GitLab using environment configuration"""
+    if not all([GITLAB_URL, GITLAB_API_TOKEN, GITLAB_REPOSITORY_PATH]):
+        raise HTTPException(status_code=500, detail="GitLab configuration not complete in environment")
+    
+    headers = {"Authorization": f"Bearer {GITLAB_API_TOKEN}"}
     all_files = []
     
     async with httpx.AsyncClient(timeout=60.0) as client:
         # Get repository tree
-        url = f"{config.gitlab_url}/api/v4/projects/{config.repository_path.replace('/', '%2F')}/repository/tree"
-        params = {"ref": config.branch, "recursive": "true", "per_page": "100"}
+        url = f"{GITLAB_URL}/api/v4/projects/{GITLAB_REPOSITORY_PATH.replace('/', '%2F')}/repository/tree"
+        params = {"ref": GITLAB_BRANCH, "recursive": "true", "per_page": "100"}
         
         response = await client.get(url, headers=headers, params=params)
         if response.status_code != 200:
@@ -431,8 +434,8 @@ async def fetch_repository_contents(config: GitLabConfig) -> List[Dict[str, Any]
         # Fetch file contents
         for file_info in relevant_files:
             try:
-                file_url = f"{config.gitlab_url}/api/v4/projects/{config.repository_path.replace('/', '%2F')}/repository/files/{file_info['path'].replace('/', '%2F')}"
-                file_params = {"ref": config.branch}
+                file_url = f"{GITLAB_URL}/api/v4/projects/{GITLAB_REPOSITORY_PATH.replace('/', '%2F')}/repository/files/{file_info['path'].replace('/', '%2F')}"
+                file_params = {"ref": GITLAB_BRANCH}
                 
                 file_response = await client.get(file_url, headers=headers, params=file_params)
                 if file_response.status_code == 200:
