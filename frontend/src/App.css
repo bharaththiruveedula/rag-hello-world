@@ -480,7 +480,182 @@
   color: #374151;
 }
 
-/* Responsive Design */
+/* Analytics Styles */
+.analytics-section {
+  min-height: 60vh;
+}
+
+.analytics-disabled {
+  text-align: center;
+  padding: 3rem;
+  color: #6b7280;
+  font-size: 1.1rem;
+}
+
+.analytics-interface {
+  space-y: 2rem;
+}
+
+.analytics-card {
+  background: #f9fafb;
+  border-radius: 8px;
+  padding: 1.5rem;
+  border: 1px solid #e5e7eb;
+  margin-bottom: 2rem;
+}
+
+.analytics-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.analytics-header h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #374151;
+  margin: 0;
+}
+
+/* Quality Analysis Styles */
+.quality-results {
+  margin-top: 1rem;
+}
+
+.quality-metrics {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.metric-item {
+  background: white;
+  padding: 1rem;
+  border-radius: 6px;
+  border: 1px solid #e5e7eb;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.metric-label {
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.metric-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #4f46e5;
+}
+
+.recommendations {
+  background: white;
+  padding: 1rem;
+  border-radius: 6px;
+  border: 1px solid #e5e7eb;
+}
+
+.recommendations h4 {
+  color: #374151;
+  margin: 0 0 0.75rem 0;
+  font-weight: 600;
+}
+
+.recommendations ul {
+  margin: 0;
+  padding-left: 1.5rem;
+  color: #4b5563;
+}
+
+.recommendations li {
+  margin-bottom: 0.5rem;
+}
+
+/* Similar Code Search Styles */
+.similar-results {
+  margin-top: 1.5rem;
+}
+
+.similar-results h4 {
+  color: #374151;
+  margin: 0 0 1rem 0;
+  font-weight: 600;
+}
+
+.similar-pattern {
+  background: white;
+  border-radius: 6px;
+  margin-bottom: 1rem;
+  border: 1px solid #e5e7eb;
+  overflow: hidden;
+}
+
+.pattern-meta {
+  background: #f3f4f6;
+  padding: 0.75rem 1rem;
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  font-size: 0.875rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.pattern-file {
+  font-weight: 600;
+  color: #4f46e5;
+}
+
+.pattern-type {
+  background: #e5e7eb;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  color: #374151;
+  text-transform: capitalize;
+}
+
+.pattern-score {
+  margin-left: auto;
+  color: #059669;
+  font-weight: 600;
+}
+
+.pattern-code {
+  padding: 1rem;
+  font-family: 'SF Mono', 'Monaco', 'Consolas', monospace;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  background: #f9fafb;
+  border: none;
+  overflow-x: auto;
+  color: #374151;
+  margin: 0;
+}
+
+/* Responsive Design Updates */
+@media (max-width: 768px) {
+  .analytics-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+  
+  .quality-metrics {
+    grid-template-columns: 1fr;
+  }
+  
+  .pattern-meta {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+  
+  .pattern-score {
+    margin-left: 0;
+  }
+}
 @media (max-width: 768px) {
   .app-title {
     font-size: 2rem;
