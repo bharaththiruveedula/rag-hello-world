@@ -108,6 +108,41 @@ function App() {
     setLoading(false);
   };
 
+  const analyzeCodeQuality = async () => {
+    setLoading(true);
+    try {
+      const response = await fetch(`${API_BASE}/api/analyze-code-quality`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      });
+      const result = await response.json();
+      setCodeQuality(result);
+    } catch (error) {
+      console.error('Code quality analysis error:', error);
+    }
+    setLoading(false);
+  };
+
+  const searchSimilarCode = async () => {
+    if (!similarCodeQuery.trim()) return;
+    
+    setLoading(true);
+    try {
+      const response = await fetch(`${API_BASE}/api/search-similar-code`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          code_snippet: similarCodeQuery
+        })
+      });
+      const result = await response.json();
+      setSimilarCodeResults(result);
+    } catch (error) {
+      console.error('Similar code search error:', error);
+    }
+    setLoading(false);
+  };
+
   const renderConnectionStatus = () => {
     if (!connectionStatus) return null;
 
