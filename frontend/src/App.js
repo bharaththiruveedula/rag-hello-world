@@ -466,6 +466,10 @@ function App() {
                         <option value="general">General Help</option>
                         <option value="bugfix">Bug Fix</option>
                         <option value="feature">New Feature</option>
+                        <option value="security">Security Analysis</option>
+                        <option value="performance">Performance Optimization</option>
+                        <option value="documentation">Documentation</option>
+                        <option value="refactor">Code Refactoring</option>
                       </select>
                     </div>
                     
