@@ -684,6 +684,100 @@ async def get_repository_info():
         logger.error(f"Repository info error: {e}")
         return {"error": str(e)}
 
+@app.post("/api/analyze-code-quality")
+async def analyze_code_quality():
+    """Analyze overall code quality metrics"""
+    try:
+        if processing_status.status != "completed":
+            raise HTTPException(status_code=400, detail="Repository not processed yet")
+        
+        # Get all chunks for analysis
+        search_results = qdrant_client_instance.scroll(
+            collection_name="code_chunks",
+            limit=1000
+        )
+        
+        analysis = {
+            "total_files": 0,
+            "total_functions": 0,
+            "total_classes": 0,
+            "total_tasks": 0,
+            "complexity_analysis": {},
+            "recommendations": []
+        }
+        
+        files_seen = set()
+        
+        for point in search_results[0]:
+            chunk_type = point.payload.get("chunk_type", "unknown")
+            file_path = point.payload.get("file_path", "")
+            
+            if file_path and file_path not in files_seen:
+                files_seen.add(file_path)
+                analysis["total_files"] += 1
+            
+            if chunk_type == "python_function":
+                analysis["total_functions"] += 1
+            elif chunk_type == "python_class":
+                analysis["total_classes"] += 1
+            elif chunk_type == "ansible_task":
+                analysis["total_tasks"] += 1
+        
+        # Add basic recommendations
+        if analysis["total_functions"] > 50:
+            analysis["recommendations"].append("Consider breaking down large modules into smaller, focused modules")
+        
+        if analysis["total_tasks"] > 100:
+            analysis["recommendations"].append("Large number of tasks detected - consider role decomposition")
+        
+        return analysis
+        
+    except Exception as e:
+        logger.error(f"Code quality analysis error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/api/search-similar-code")
+async def search_similar_code(request: dict):
+    """Find similar code patterns"""
+    try:
+        if processing_status.status != "completed":
+            raise HTTPException(status_code=400, detail="Repository not processed yet")
+        
+        code_snippet = request.get("code_snippet", "")
+        if not code_snippet:
+            raise HTTPException(status_code=400, detail="Code snippet required")
+        
+        # Generate embedding for the code snippet
+        snippet_embedding = embedding_model.encode(code_snippet).tolist()
+        
+        # Search for similar code
+        search_results = qdrant_client_instance.search(
+            collection_name="code_chunks",
+            query_vector=snippet_embedding,
+            limit=10,
+            score_threshold=0.7  # Only return highly similar results
+        )
+        
+        similar_patterns = []
+        for result in search_results:
+            similar_patterns.append({
+                "file_path": result.payload["file_path"],
+                "chunk_type": result.payload["chunk_type"],
+                "content": result.payload["content"],
+                "similarity_score": result.score,
+                "metadata": result.payload["metadata"]
+            })
+        
+        return {
+            "query_snippet": code_snippet,
+            "similar_patterns": similar_patterns,
+            "total_found": len(similar_patterns)
+        }
+        
+    except Exception as e:
+        logger.error(f"Similar code search error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8001)
