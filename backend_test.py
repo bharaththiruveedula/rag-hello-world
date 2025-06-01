@@ -85,6 +85,130 @@ class RAGCodeAssistantTester:
             "repository-info",
             200
         )
+    
+    def test_code_suggestion_general(self):
+        """Test code suggestion with general type"""
+        return self.run_test(
+            "Code Suggestion - General",
+            "POST",
+            "suggest",
+            200,
+            data={
+                "query": "How to handle errors in Ansible tasks?",
+                "suggestion_type": "general"
+            }
+        )
+    
+    def test_code_suggestion_bugfix(self):
+        """Test code suggestion with bugfix type"""
+        return self.run_test(
+            "Code Suggestion - Bugfix",
+            "POST",
+            "suggest",
+            200,
+            data={
+                "query": "Fix permission denied error in file access",
+                "suggestion_type": "bugfix"
+            }
+        )
+    
+    def test_code_suggestion_security(self):
+        """Test code suggestion with security type"""
+        return self.run_test(
+            "Code Suggestion - Security",
+            "POST",
+            "suggest",
+            200,
+            data={
+                "query": "Check for security vulnerabilities in SSH configuration",
+                "suggestion_type": "security"
+            }
+        )
+    
+    def test_code_suggestion_performance(self):
+        """Test code suggestion with performance type"""
+        return self.run_test(
+            "Code Suggestion - Performance",
+            "POST",
+            "suggest",
+            200,
+            data={
+                "query": "Optimize database query performance",
+                "suggestion_type": "performance"
+            }
+        )
+    
+    def test_code_suggestion_documentation(self):
+        """Test code suggestion with documentation type"""
+        return self.run_test(
+            "Code Suggestion - Documentation",
+            "POST",
+            "suggest",
+            200,
+            data={
+                "query": "Generate documentation for this Python function",
+                "suggestion_type": "documentation"
+            }
+        )
+    
+    def test_code_suggestion_refactor(self):
+        """Test code suggestion with refactor type"""
+        return self.run_test(
+            "Code Suggestion - Refactor",
+            "POST",
+            "suggest",
+            200,
+            data={
+                "query": "Refactor this code to improve maintainability",
+                "suggestion_type": "refactor"
+            }
+        )
+    
+    def test_analyze_code_quality(self):
+        """Test code quality analysis endpoint"""
+        return self.run_test(
+            "Code Quality Analysis",
+            "POST",
+            "analyze-code-quality",
+            200
+        )
+    
+    def test_search_similar_code(self):
+        """Test similar code search endpoint"""
+        return self.run_test(
+            "Similar Code Search",
+            "POST",
+            "search-similar-code",
+            200,
+            data={
+                "code_snippet": "def process_data(data):\n    result = []\n    for item in data:\n        result.append(item * 2)\n    return result"
+            }
+        )
+    
+    def test_error_handling(self):
+        """Test error handling for invalid requests"""
+        # Test missing code snippet
+        success, _ = self.run_test(
+            "Error Handling - Missing Code Snippet",
+            "POST",
+            "search-similar-code",
+            400,
+            data={}
+        )
+        
+        # Test invalid suggestion type
+        success2, _ = self.run_test(
+            "Error Handling - Invalid Suggestion Type",
+            "POST",
+            "suggest",
+            200,  # Should still work with default type
+            data={
+                "query": "Help with code",
+                "suggestion_type": "invalid_type"
+            }
+        )
+        
+        return success and success2
 
     def print_summary(self):
         """Print test summary"""
@@ -97,7 +221,11 @@ class RAGCodeAssistantTester:
             print(f"{status_icon} {result['name']}")
             
             if result["status"] == "passed" and "response" in result:
-                print(f"   Response: {result['response']}")
+                # Print a truncated version of the response for readability
+                response_str = str(result["response"])
+                if len(response_str) > 200:
+                    response_str = response_str[:200] + "..."
+                print(f"   Response: {response_str}")
             elif result["status"] == "failed":
                 print(f"   Expected status: {result['expected']}, Got: {result['got']}")
             elif result["status"] == "error":
@@ -110,11 +238,26 @@ def main():
     # Setup
     tester = RAGCodeAssistantTester()
     
-    # Run tests
+    # Run basic API tests
     tester.test_health_endpoint()
     tester.test_status_endpoint()
     tester.test_connections()
     tester.test_repository_info()
+    
+    # Test new suggestion types
+    tester.test_code_suggestion_general()
+    tester.test_code_suggestion_bugfix()
+    tester.test_code_suggestion_security()
+    tester.test_code_suggestion_performance()
+    tester.test_code_suggestion_documentation()
+    tester.test_code_suggestion_refactor()
+    
+    # Test analytics features
+    tester.test_analyze_code_quality()
+    tester.test_search_similar_code()
+    
+    # Test error handling
+    tester.test_error_handling()
     
     # Print results
     success = tester.print_summary()
