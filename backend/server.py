@@ -216,19 +216,80 @@ async def test_ollama_connection():
     except Exception as e:
         return {"status": "error", "message": str(e)}
 
-async def test_gitlab_connection(config: GitLabConfig):
-    """Test GitLab API connection"""
+async def test_jira_connection() -> Dict[str, Any]:
+    """Test JIRA connection"""
+    if not all([JIRA_BASE_URL, JIRA_USERNAME, JIRA_API_TOKEN]):
+        return {"status": "error", "message": "JIRA credentials not configured in environment"}
+    
     try:
-        headers = {"Authorization": f"Bearer {config.api_token}"}
+        auth = (JIRA_USERNAME, JIRA_API_TOKEN)
+        async with httpx.AsyncClient(timeout=30.0) as client:
+            response = await client.get(f"{JIRA_BASE_URL}/rest/api/3/myself", auth=auth)
+            if response.status_code == 200:
+                user_info = response.json()
+                return {
+                    "status": "connected",
+                    "user": user_info.get("displayName"),
+                    "account_id": user_info.get("accountId")
+                }
+            else:
+                return {"status": "error", "message": f"JIRA authentication failed: {response.status_code}"}
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
+
+async def fetch_jira_ticket(ticket_id: str) -> Optional[JiraTicketInfo]:
+    """Fetch JIRA ticket information"""
+    if not all([JIRA_BASE_URL, JIRA_USERNAME, JIRA_API_TOKEN]):
+        raise HTTPException(status_code=500, detail="JIRA credentials not configured")
+    
+    try:
+        auth = (JIRA_USERNAME, JIRA_API_TOKEN)
+        async with httpx.AsyncClient(timeout=30.0) as client:
+            response = await client.get(
+                f"{JIRA_BASE_URL}/rest/api/3/issue/{ticket_id}",
+                auth=auth,
+                params={"fields": "summary,description,issuetype,status,assignee,reporter"}
+            )
+            
+            if response.status_code == 200:
+                data = response.json()
+                fields = data.get("fields", {})
+                
+                return JiraTicketInfo(
+                    ticket_id=ticket_id,
+                    title=fields.get("summary", ""),
+                    description=fields.get("description", {}).get("content", [{}])[0].get("content", [{}])[0].get("text", "") if fields.get("description") else "",
+                    issue_type=fields.get("issuetype", {}).get("name", ""),
+                    status=fields.get("status", {}).get("name", ""),
+                    assignee=fields.get("assignee", {}).get("displayName") if fields.get("assignee") else None,
+                    reporter=fields.get("reporter", {}).get("displayName") if fields.get("reporter") else None
+                )
+            elif response.status_code == 404:
+                raise HTTPException(status_code=404, detail=f"JIRA ticket {ticket_id} not found")
+            else:
+                raise HTTPException(status_code=400, detail=f"Failed to fetch JIRA ticket: {response.status_code}")
+                
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"JIRA API error: {str(e)}")
+
+async def test_gitlab_connection() -> Dict[str, Any]:
+    """Test GitLab connection using environment configuration"""
+    if not all([GITLAB_URL, GITLAB_API_TOKEN, GITLAB_REPOSITORY_PATH]):
+        return {"status": "error", "message": "GitLab credentials not configured in environment"}
+    
+    try:
+        headers = {"Authorization": f"Bearer {GITLAB_API_TOKEN}"}
         async with httpx.AsyncClient(timeout=30.0) as client:
             # Test API access
-            response = await client.get(f"{config.gitlab_url}/api/v4/user", headers=headers)
+            response = await client.get(f"{GITLAB_URL}/api/v4/user", headers=headers)
             if response.status_code == 200:
                 user_info = response.json()
                 
                 # Test repository access
                 repo_response = await client.get(
-                    f"{config.gitlab_url}/api/v4/projects/{config.repository_path.replace('/', '%2F')}",
+                    f"{GITLAB_URL}/api/v4/projects/{GITLAB_REPOSITORY_PATH.replace('/', '%2F')}",
                     headers=headers
                 )
                 if repo_response.status_code == 200:
