@@ -480,6 +480,69 @@
   color: #374151;
 }
 
+/* Process Section Styles */
+.process-section {
+  min-height: 40vh;
+}
+
+.section-description {
+  color: #6b7280;
+  margin-bottom: 2rem;
+  font-size: 1.1rem;
+  line-height: 1.6;
+}
+
+/* JIRA Section Styles */
+.jira-section {
+  min-height: 60vh;
+}
+
+.jira-disabled {
+  text-align: center;
+  padding: 3rem;
+  color: #6b7280;
+  font-size: 1.1rem;
+}
+
+.jira-interface {
+  space-y: 2rem;
+}
+
+.jira-ticket-info {
+  background: #f0f9ff;
+  border: 1px solid #0ea5e9;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.jira-ticket-info h4 {
+  color: #0369a1;
+  margin: 0 0 0.75rem 0;
+  font-weight: 600;
+  font-size: 1.1rem;
+}
+
+.jira-ticket-info p {
+  margin: 0.25rem 0;
+  color: #374151;
+}
+
+.jira-ticket-info strong {
+  color: #1f2937;
+  font-weight: 600;
+}
+
+/* Enhanced Connection Status for JIRA */
+.connection-status .status-item:has(.status-header:contains("JIRA")) {
+  background: #f0f9ff;
+}
+
+.connection-status .status-item:has(.status-header:contains("JIRA")).success {
+  border-left-color: #0ea5e9;
+  background: #f0f9ff;
+}
+
 /* Analytics Styles */
 .analytics-section {
   min-height: 60vh;
