@@ -532,24 +532,26 @@ body {
 }
 
 .analytics-card {
-  background: rgba(30, 41, 59, 0.3);
-  border: 1px solid var(--slate-700);
+  background: var(--white);
+  border: 1px solid var(--gray-200);
   border-radius: var(--radius-lg);
   padding: var(--space-xl);
 }
 
 .card-header {
   display: flex;
-  justify-content: between;
+  justify-content: space-between;
   align-items: center;
   margin-bottom: var(--space-lg);
 }
 
 .card-title {
-  font-size: 1.25rem;
+  font-family: var(--font-family-display);
+  font-size: 1.1rem;
   font-weight: 600;
-  color: var(--slate-100);
+  color: var(--gray-900);
   margin: 0;
+  letter-spacing: -0.01em;
 }
 
 .quality-results {
@@ -559,34 +561,35 @@ body {
 .recommendations {
   margin-top: var(--space-lg);
   padding: var(--space-lg);
-  background: rgba(99, 102, 241, 0.1);
-  border: 1px solid rgba(99, 102, 241, 0.2);
+  background: var(--gray-50);
+  border: 1px solid var(--gray-200);
   border-radius: var(--radius-lg);
 }
 
 .recommendations-title {
-  color: var(--primary-400);
+  color: var(--gray-900);
   font-weight: 600;
   margin: 0 0 var(--space-md) 0;
+  font-size: 0.9rem;
 }
 
 .recommendations-list {
   list-style: none;
-  space-y: var(--space-sm);
 }
 
 .recommendations-list li {
-  color: var(--slate-300);
-  font-size: 0.9rem;
+  color: var(--gray-700);
+  font-size: 0.85rem;
   padding-left: var(--space-lg);
   position: relative;
+  margin-bottom: var(--space-sm);
 }
 
 .recommendations-list li::before {
-  content: '→';
+  content: '•';
   position: absolute;
   left: 0;
-  color: var(--primary-400);
+  color: var(--primary-500);
   font-weight: bold;
 }
 
