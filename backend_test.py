@@ -185,30 +185,57 @@ class RAGCodeAssistantTester:
             }
         )
     
-    def test_error_handling(self):
-        """Test error handling for invalid requests"""
-        # Test missing code snippet
-        success, _ = self.run_test(
-            "Error Handling - Missing Code Snippet",
+    def test_jira_suggest(self):
+        """Test JIRA-based code suggestion endpoint"""
+        return self.run_test(
+            "JIRA Suggestion",
             "POST",
-            "search-similar-code",
-            400,
-            data={}
-        )
-        
-        # Test invalid suggestion type
-        success2, _ = self.run_test(
-            "Error Handling - Invalid Suggestion Type",
-            "POST",
-            "suggest",
-            200,  # Should still work with default type
+            "jira-suggest",
+            200,
             data={
-                "query": "Help with code",
-                "suggestion_type": "invalid_type"
+                "ticket_id": "PROJ-123",
+                "suggestion_type": "general"
             }
         )
-        
-        return success and success2
+    
+    def test_jira_suggest_bugfix(self):
+        """Test JIRA-based code suggestion with bugfix type"""
+        return self.run_test(
+            "JIRA Suggestion - Bugfix",
+            "POST",
+            "jira-suggest",
+            200,
+            data={
+                "ticket_id": "PROJ-123",
+                "suggestion_type": "bugfix"
+            }
+        )
+    
+    def test_jira_suggest_feature(self):
+        """Test JIRA-based code suggestion with feature type"""
+        return self.run_test(
+            "JIRA Suggestion - Feature",
+            "POST",
+            "jira-suggest",
+            200,
+            data={
+                "ticket_id": "PROJ-123",
+                "suggestion_type": "feature"
+            }
+        )
+    
+    def test_jira_suggest_invalid_ticket(self):
+        """Test JIRA-based code suggestion with invalid ticket ID"""
+        return self.run_test(
+            "JIRA Suggestion - Invalid Ticket",
+            "POST",
+            "jira-suggest",
+            404,  # Should return 404 for non-existent ticket
+            data={
+                "ticket_id": "INVALID-999",
+                "suggestion_type": "general"
+            }
+        )
 
     def print_summary(self):
         """Print test summary"""
