@@ -377,26 +377,26 @@ body {
   font-size: 0.85rem;
 }
 
-/* Status Components */
+/* Clean Status Components */
 .status-pill {
   display: flex;
   flex-direction: column;
   gap: var(--space-sm);
   padding: var(--space-lg);
-  background: rgba(30, 41, 59, 0.3);
-  border: 1px solid var(--slate-700);
+  background: var(--white);
+  border: 1px solid var(--gray-200);
   border-radius: var(--radius-lg);
   transition: all var(--transition-normal);
 }
 
 .status-pill.status-success {
   border-color: var(--success-500);
-  background: rgba(16, 185, 129, 0.1);
+  background: rgba(48, 209, 88, 0.05);
 }
 
 .status-pill.status-error {
   border-color: var(--error-500);
-  background: rgba(239, 68, 68, 0.1);
+  background: rgba(255, 59, 48, 0.05);
 }
 
 .status-indicator {
@@ -406,11 +406,10 @@ body {
 }
 
 .status-dot {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
   border-radius: 50%;
-  background: var(--slate-500);
-  animation: pulse 2s infinite;
+  background: var(--gray-400);
 }
 
 .status-pill.status-success .status-dot {
@@ -421,38 +420,30 @@ body {
   background: var(--error-500);
 }
 
-@keyframes pulse {
-  0%, 100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.5;
-  }
-}
-
 .status-icon {
-  font-size: 1.2rem;
+  font-size: 1.1rem;
 }
 
 .status-badge {
   padding: var(--space-xs) var(--space-sm);
-  background: var(--slate-600);
-  color: var(--slate-200);
+  background: var(--gray-100);
+  color: var(--gray-700);
   border-radius: var(--radius-sm);
-  font-size: 0.8rem;
-  font-weight: 600;
+  font-size: 0.75rem;
+  font-weight: 500;
   text-transform: uppercase;
+  letter-spacing: 0.05em;
   margin-left: auto;
 }
 
 .status-details {
-  color: var(--slate-400);
-  font-size: 0.9rem;
+  color: var(--gray-600);
+  font-size: 0.85rem;
 }
 
 .status-error-msg {
-  color: var(--error-400);
-  font-size: 0.9rem;
+  color: var(--error-500);
+  font-size: 0.85rem;
   font-weight: 500;
 }
 
