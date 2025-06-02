@@ -261,7 +261,9 @@ class RAGCodeAssistantTester:
         )
         
         return success and success2
-        print("\n" + "="*50)
+        
+    def print_summary(self):
+        """Print test summary"""
         print(f"📊 Test Summary: {self.tests_passed}/{self.tests_run} tests passed")
         print("="*50)
         
