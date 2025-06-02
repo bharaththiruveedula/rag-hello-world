@@ -73,7 +73,6 @@ class GitLabConfig(BaseModel):
     branch: str = "main"
 
 class RepositoryProcessRequest(BaseModel):
-    config: GitLabConfig
     force_reprocess: bool = False  # Option to force reprocess even if already processed
 
 class JiraTicketRequest(BaseModel):
