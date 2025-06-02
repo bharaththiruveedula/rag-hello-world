@@ -475,7 +475,7 @@ body {
   font-weight: 500;
 }
 
-/* Metrics */
+/* Swiss-style Metrics */
 .metrics-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -483,27 +483,27 @@ body {
 }
 
 .metric-card {
-  background: rgba(30, 41, 59, 0.3);
-  border: 1px solid var(--slate-700);
+  background: var(--white);
+  border: 1px solid var(--gray-200);
   border-radius: var(--radius-lg);
   padding: var(--space-lg);
   text-align: center;
 }
 
 .metric-value {
-  font-size: 2.5rem;
-  font-weight: 800;
-  background: linear-gradient(135deg, var(--primary-500), var(--secondary-500));
-  background-clip: text;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  font-family: var(--font-family-display);
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--gray-900);
   margin-bottom: var(--space-sm);
+  letter-spacing: -0.02em;
 }
 
 .metric-label {
-  color: var(--slate-400);
-  font-size: 0.9rem;
-  font-weight: 600;
+  color: var(--gray-600);
+  font-size: 0.85rem;
+  font-weight: 500;
+  letter-spacing: -0.01em;
 }
 
 .metric-small {
@@ -511,7 +511,7 @@ body {
 }
 
 .metric-small .metric-value {
-  font-size: 1.5rem;
+  font-size: 1.25rem;
   margin-bottom: var(--space-xs);
 }
 
@@ -520,7 +520,7 @@ body {
   color: white;
   padding: var(--space-xs) var(--space-sm);
   border-radius: var(--radius-sm);
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   font-weight: 600;
 }
 
