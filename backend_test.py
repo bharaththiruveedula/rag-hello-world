@@ -304,6 +304,12 @@ def main():
     tester.test_code_suggestion_documentation()
     tester.test_code_suggestion_refactor()
     
+    # Test JIRA integration
+    tester.test_jira_suggest()
+    tester.test_jira_suggest_bugfix()
+    tester.test_jira_suggest_feature()
+    tester.test_jira_suggest_invalid_ticket()
+    
     # Test analytics features
     tester.test_analyze_code_quality()
     tester.test_search_similar_code()
