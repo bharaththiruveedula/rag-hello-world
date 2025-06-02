@@ -96,15 +96,20 @@ body {
   display: none;
 }
 
-/* Header */
+/* Clean Apple-style Header */
 .app-header {
+  background: var(--white);
+  border-bottom: 1px solid var(--gray-200);
   padding: var(--space-xl) var(--space-lg);
-  position: relative;
-  z-index: 10;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  backdrop-filter: blur(20px);
+  background: rgba(255, 255, 255, 0.8);
 }
 
 .header-content {
-  max-width: 1400px;
+  max-width: 1200px;
   margin: 0 auto;
 }
 
@@ -118,30 +123,31 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 60px;
-  height: 60px;
-  background: linear-gradient(135deg, var(--primary-500), var(--secondary-500));
+  width: 48px;
+  height: 48px;
+  background: var(--primary-500);
   border-radius: var(--radius-xl);
   color: white;
-  box-shadow: var(--shadow-lg);
+  box-shadow: var(--shadow-md);
 }
 
 .app-title {
-  font-size: 2.5rem;
-  font-weight: 800;
-  background: linear-gradient(135deg, var(--primary-500), var(--secondary-500), var(--accent-500));
-  background-clip: text;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  font-family: var(--font-family-display);
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--gray-900);
   margin: 0;
   line-height: 1.2;
+  letter-spacing: -0.02em;
 }
 
 .app-subtitle {
-  font-size: 1.1rem;
-  color: var(--slate-400);
-  font-weight: 500;
+  font-family: var(--font-family-text);
+  font-size: 1rem;
+  color: var(--gray-600);
+  font-weight: 400;
   margin: 0;
+  margin-top: var(--space-xs);
 }
 
 /* Navigation */
