@@ -654,25 +654,25 @@ body {
   letter-spacing: -0.01em;
 }
 
-/* Suggestion Content */
+/* Clean Suggestion Content */
 .suggestion-content {
   margin-top: var(--space-lg);
 }
 
 .suggestion-text {
   font-family: var(--font-mono);
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   line-height: 1.6;
   white-space: pre-wrap;
-  background: rgba(30, 41, 59, 0.5);
+  background: var(--gray-50);
   border-radius: var(--radius-lg);
   padding: var(--space-xl);
-  border: 1px solid var(--slate-700);
+  border: 1px solid var(--gray-200);
 }
 
 .code-block {
-  background: var(--slate-800);
-  color: var(--slate-200);
+  background: var(--gray-100);
+  color: var(--gray-800);
   padding: var(--space-md);
   border-radius: var(--radius-md);
   margin: var(--space-sm) 0;
@@ -681,7 +681,7 @@ body {
 
 .text-line {
   margin: var(--space-sm) 0;
-  color: var(--slate-300);
+  color: var(--gray-700);
 }
 
 /* Context Chunks */
