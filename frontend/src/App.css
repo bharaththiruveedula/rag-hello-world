@@ -838,6 +838,10 @@ body {
   .metrics-grid {
     grid-template-columns: repeat(2, 1fr);
   }
+  
+  .logo-section {
+    gap: var(--space-md);
+  }
 }
 
 @media (max-width: 768px) {
@@ -846,11 +850,11 @@ body {
   }
   
   .nav-container {
-    padding: 0 var(--space-md) var(--space-lg);
+    padding: 0 var(--space-md);
   }
   
   .main-content {
-    padding: 0 var(--space-md) var(--space-xl);
+    padding: var(--space-lg) var(--space-md);
   }
   
   .glass-card {
@@ -858,7 +862,7 @@ body {
   }
   
   .app-title {
-    font-size: 2rem;
+    font-size: 1.75rem;
   }
   
   .logo-section {
@@ -868,12 +872,14 @@ body {
   }
   
   .nav-content {
-    flex-direction: column;
+    flex-wrap: wrap;
     gap: var(--space-xs);
   }
   
   .nav-tab {
+    flex: 1;
     justify-content: center;
+    min-width: 0;
   }
   
   .action-buttons {
