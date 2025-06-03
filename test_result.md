@@ -102,7 +102,7 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-user_problem_statement: "Use this repository.... Instead of using JIRA rest api ... use python JIRA package as my enterprise JIRA is not working with direct API calls and use token_auth for authentication"
+user_problem_statement: "Use this repository.... Instead of using JIRA rest api ... use python JIRA package as my enterprise JIRA is not working with direct API calls and use token_auth for authentication. Also, I see in relevant_files while processing repository is considering only type blob... but it needs to consider all recursive trees as well... like all subfolders... and ignore files under 1. config/ 2. files starting with watch/ 3. files starting with Dockerfile 4. files under playbook/ or handlers/"
 
 backend:
   - task: "Replace JIRA REST API calls with Python JIRA package"
@@ -134,6 +134,18 @@ backend:
       - working: true
         agent: "testing"
         comment: "Verified that token authentication is correctly implemented as the primary authentication method with basic_auth as fallback. The JIRA client initialization in the startup event attempts token_auth first and falls back to basic_auth if token_auth fails and a username is provided. The same pattern is implemented in both test_jira_connection() and fetch_jira_ticket() functions. The auth_method is correctly reported in the API response when connection is successful."
+
+  - task: "Update repository processing to include all recursive trees and implement filtering"
+    implemented: true
+    working: "NA"
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Updated fetch_repository_contents() function to process all recursive trees/subfolders instead of only immediate blob files. Added comprehensive filtering logic: 1) Excludes files under config/ directories, 2) Excludes files starting with 'watch', 3) Excludes files starting with 'Dockerfile', 4) Excludes files under playbook/ or handlers/ directories. Added pagination support for large repositories, better error handling for binary files, and detailed logging for debugging. The function now processes all directory trees recursively while applying the specified exclusion rules."
 
 metadata:
   created_by: "main_agent"
