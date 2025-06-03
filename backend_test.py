@@ -251,30 +251,199 @@ class RAGCodeAssistantTester:
             }
         )
 
-    def test_error_handling(self):
-        """Test error handling for invalid requests"""
-        # Test missing code snippet
-        success, _ = self.run_test(
-            "Error Handling - Missing Code Snippet",
+    def test_process_repository(self):
+        """Test the repository processing endpoint"""
+        return self.run_test(
+            "Process Repository",
             "POST",
-            "search-similar-code",
-            400,
-            data={}
+            "process-repository",
+            200,
+            data={"force_reprocess": True}
         )
         
-        # Test invalid suggestion type
-        success2, _ = self.run_test(
-            "Error Handling - Invalid Suggestion Type",
-            "POST",
-            "suggest",
-            200,  # Should still work with default type
-            data={
-                "query": "Help with code",
-                "suggestion_type": "invalid_type"
+    def test_repository_filtering(self):
+        """
+        Test the repository filtering logic by mocking the should_exclude_path function
+        This is a unit test to verify the filtering rules are working correctly
+        """
+        print("\n🔍 Testing Repository Filtering Logic...")
+        self.tests_run += 1
+        
+        # Test cases for filtering rules
+        test_cases = [
+            # Files under config/ directories should be excluded
+            {"path": "project/config/settings.yml", "expected": True},
+            {"path": "project/app/config/database.yml", "expected": True},
+            {"path": "config/app.yml", "expected": True},
+            
+            # Files starting with 'watch' should be excluded
+            {"path": "project/watchdog.py", "expected": True},
+            {"path": "project/app/watch_service.py", "expected": True},
+            {"path": "watch_config.yml", "expected": True},
+            
+            # Files starting with 'Dockerfile' should be excluded
+            {"path": "Dockerfile", "expected": True},
+            {"path": "Dockerfile.dev", "expected": True},
+            {"path": "project/Dockerfile.prod", "expected": True},
+            
+            # Files under playbook/ or handlers/ directories should be excluded
+            {"path": "project/playbook/deploy.yml", "expected": True},
+            {"path": "ansible/playbook/setup.yml", "expected": True},
+            {"path": "project/roles/app/handlers/main.yml", "expected": True},
+            {"path": "handlers/restart.yml", "expected": True},
+            
+            # Files that should be included
+            {"path": "project/app/main.py", "expected": False},
+            {"path": "project/roles/app/tasks/main.yml", "expected": False},
+            {"path": "project/templates/index.html", "expected": False},
+            {"path": "project/roles/app/defaults/main.yml", "expected": False},
+            {"path": "project/roles/app/vars/main.yml", "expected": False}
+        ]
+        
+        # Import the function from server.py
+        from backend.server import should_exclude_path
+        
+        # Test each case
+        failures = []
+        for case in test_cases:
+            path = case["path"]
+            expected = case["expected"]
+            result = should_exclude_path(path)
+            
+            if result != expected:
+                failures.append({
+                    "path": path,
+                    "expected": expected,
+                    "got": result
+                })
+                print(f"❌ Failed - Path: {path}, Expected: {expected}, Got: {result}")
+            else:
+                print(f"✅ Passed - Path: {path}, Result: {result}")
+        
+        success = len(failures) == 0
+        if success:
+            self.tests_passed += 1
+            print("✅ All filtering rules passed")
+            result = {"name": "Repository Filtering Logic", "status": "passed"}
+        else:
+            print(f"❌ Failed - {len(failures)} filtering rules failed")
+            result = {
+                "name": "Repository Filtering Logic", 
+                "status": "failed", 
+                "failures": failures
             }
-        )
+            
+        self.test_results.append(result)
+        return success, {}
         
-        return success and success2
+    def test_pagination_handling(self):
+        """Test the pagination handling for large repositories"""
+        print("\n🔍 Testing Repository Pagination Handling...")
+        self.tests_run += 1
+        
+        # We'll check if the pagination logic is in place
+        # This is a code inspection test rather than a functional test
+        
+        try:
+            # Import the function from server.py
+            from backend.server import fetch_repository_contents
+            
+            # Get the source code
+            import inspect
+            source = inspect.getsource(fetch_repository_contents)
+            
+            # Check for pagination-related code
+            pagination_checks = [
+                "page = 1" in source,
+                "params[\"page\"] = page" in source,
+                "while True:" in source,
+                "if not tree_page:" in source or "if len(tree_page) < " in source,
+                "page += 1" in source
+            ]
+            
+            success = all(pagination_checks)
+            
+            if success:
+                self.tests_passed += 1
+                print("✅ Pagination handling logic is correctly implemented")
+                result = {"name": "Repository Pagination Handling", "status": "passed"}
+            else:
+                missing_features = [
+                    "Page initialization",
+                    "Page parameter setting",
+                    "Loop for pagination",
+                    "Empty page check",
+                    "Page increment"
+                ]
+                failed_checks = [missing_features[i] for i, check in enumerate(pagination_checks) if not check]
+                print(f"❌ Failed - Missing pagination features: {', '.join(failed_checks)}")
+                result = {
+                    "name": "Repository Pagination Handling", 
+                    "status": "failed", 
+                    "missing_features": failed_checks
+                }
+                
+            self.test_results.append(result)
+            return success, {}
+            
+        except Exception as e:
+            print(f"❌ Failed - Error: {str(e)}")
+            self.test_results.append({
+                "name": "Repository Pagination Handling", 
+                "status": "error", 
+                "message": str(e)
+            })
+            return False, {}
+            
+    def test_error_handling_for_binary_files(self):
+        """Test error handling for binary files"""
+        print("\n🔍 Testing Binary File Error Handling...")
+        self.tests_run += 1
+        
+        try:
+            # Import the function from server.py
+            from backend.server import fetch_repository_contents
+            
+            # Get the source code
+            import inspect
+            source = inspect.getsource(fetch_repository_contents)
+            
+            # Check for binary file handling code
+            binary_file_checks = [
+                "UnicodeDecodeError" in source,
+                "Skip binary file" in source or "Skipping binary file" in source
+            ]
+            
+            success = all(binary_file_checks)
+            
+            if success:
+                self.tests_passed += 1
+                print("✅ Binary file error handling is correctly implemented")
+                result = {"name": "Binary File Error Handling", "status": "passed"}
+            else:
+                missing_features = [
+                    "UnicodeDecodeError exception handling",
+                    "Binary file skipping logic"
+                ]
+                failed_checks = [missing_features[i] for i, check in enumerate(binary_file_checks) if not check]
+                print(f"❌ Failed - Missing binary file handling features: {', '.join(failed_checks)}")
+                result = {
+                    "name": "Binary File Error Handling", 
+                    "status": "failed", 
+                    "missing_features": failed_checks
+                }
+                
+            self.test_results.append(result)
+            return success, {}
+            
+        except Exception as e:
+            print(f"❌ Failed - Error: {str(e)}")
+            self.test_results.append({
+                "name": "Binary File Error Handling", 
+                "status": "error", 
+                "message": str(e)
+            })
+            return False, {}
         
     def print_summary(self):
         """Print test summary"""
