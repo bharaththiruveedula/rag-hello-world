@@ -12,3 +12,4 @@ PyYAML==6.0.1
 tiktoken==0.5.2
 python-dotenv==1.0.0
 numpy==1.24.3
+jira==3.5.0
