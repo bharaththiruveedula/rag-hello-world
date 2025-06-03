@@ -23,6 +23,10 @@ load_dotenv()
 # Third-party imports for RAG
 import tiktoken
 
+# JIRA imports
+from jira import JIRA
+from jira.exceptions import JIRAError
+
 # Lazy imports - will be loaded during startup
 qdrant_client = None
 SentenceTransformer = None
