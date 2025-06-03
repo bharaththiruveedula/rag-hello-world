@@ -445,8 +445,30 @@ class RAGCodeAssistantTester:
             })
             return False, {}
         
-    def print_summary(self):
-        """Print test summary"""
+    def test_error_handling(self):
+        """Test error handling for invalid requests"""
+        # Test missing code snippet
+        success, _ = self.run_test(
+            "Error Handling - Missing Code Snippet",
+            "POST",
+            "search-similar-code",
+            400,
+            data={}
+        )
+        
+        # Test invalid suggestion type
+        success2, _ = self.run_test(
+            "Error Handling - Invalid Suggestion Type",
+            "POST",
+            "suggest",
+            200,  # Should still work with default type
+            data={
+                "query": "Help with code",
+                "suggestion_type": "invalid_type"
+            }
+        )
+        
+        return success and success2
         print("\n" + "="*50)
         print(f"📊 Test Summary: {self.tests_passed}/{self.tests_run} tests passed")
         print("="*50)
