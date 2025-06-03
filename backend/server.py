@@ -303,41 +303,80 @@ async def test_jira_connection() -> Dict[str, Any]:
         return {"status": "error", "message": error_msg}
 
 async def fetch_jira_ticket(ticket_id: str) -> Optional[JiraTicketInfo]:
-    """Fetch JIRA ticket information"""
-    if not all([JIRA_BASE_URL, JIRA_USERNAME, JIRA_API_TOKEN]):
+    """Fetch JIRA ticket information using JIRA client"""
+    global jira_client
+    
+    if not JIRA_BASE_URL or not JIRA_API_TOKEN:
         raise HTTPException(status_code=500, detail="JIRA credentials not configured")
     
-    try:
-        auth = (JIRA_USERNAME, JIRA_API_TOKEN)
-        async with httpx.AsyncClient(timeout=30.0) as client:
-            response = await client.get(
-                f"{JIRA_BASE_URL}/rest/api/3/issue/{ticket_id}",
-                auth=auth,
-                params={"fields": "summary,description,issuetype,status,assignee,reporter"}
+    # If jira_client is not initialized, try to initialize it
+    if jira_client is None:
+        try:
+            # Try token authentication first (recommended for enterprise)
+            jira_client = JIRA(
+                server=JIRA_BASE_URL,
+                token_auth=JIRA_API_TOKEN,
+                options={'verify': True}
             )
-            
-            if response.status_code == 200:
-                data = response.json()
-                fields = data.get("fields", {})
-                
-                return JiraTicketInfo(
-                    ticket_id=ticket_id,
-                    title=fields.get("summary", ""),
-                    description=fields.get("description", {}).get("content", [{}])[0].get("content", [{}])[0].get("text", "") if fields.get("description") else "",
-                    issue_type=fields.get("issuetype", {}).get("name", ""),
-                    status=fields.get("status", {}).get("name", ""),
-                    assignee=fields.get("assignee", {}).get("displayName") if fields.get("assignee") else None,
-                    reporter=fields.get("reporter", {}).get("displayName") if fields.get("reporter") else None
-                )
-            elif response.status_code == 404:
-                raise HTTPException(status_code=404, detail=f"JIRA ticket {ticket_id} not found")
+            logger.info("JIRA client initialized with token authentication for ticket fetch")
+        except Exception as e:
+            # Fallback to basic auth if username is provided
+            if JIRA_USERNAME:
+                try:
+                    jira_client = JIRA(
+                        server=JIRA_BASE_URL,
+                        basic_auth=(JIRA_USERNAME, JIRA_API_TOKEN),
+                        options={'verify': True}
+                    )
+                    logger.info("JIRA client initialized with basic authentication for ticket fetch")
+                except Exception as e2:
+                    raise HTTPException(status_code=500, detail=f"JIRA client initialization failed: {str(e2)}")
             else:
-                raise HTTPException(status_code=400, detail=f"Failed to fetch JIRA ticket: {response.status_code}")
-                
-    except HTTPException:
-        raise
+                raise HTTPException(status_code=500, detail=f"JIRA token authentication failed: {str(e)}")
+    
+    try:
+        # Fetch the issue using JIRA client
+        issue = jira_client.issue(ticket_id, fields='summary,description,issuetype,status,assignee,reporter')
+        
+        # Extract description text - handle different formats
+        description = ""
+        if hasattr(issue.fields, 'description') and issue.fields.description:
+            if hasattr(issue.fields.description, 'content'):
+                # New Atlassian Document Format (ADF)
+                try:
+                    for content_block in issue.fields.description.content:
+                        if content_block.get('type') == 'paragraph':
+                            for text_block in content_block.get('content', []):
+                                if text_block.get('type') == 'text':
+                                    description += text_block.get('text', '') + " "
+                except:
+                    description = str(issue.fields.description)
+            else:
+                # Plain text or legacy format
+                description = str(issue.fields.description)
+        
+        return JiraTicketInfo(
+            ticket_id=ticket_id,
+            title=issue.fields.summary or "",
+            description=description.strip(),
+            issue_type=issue.fields.issuetype.name if issue.fields.issuetype else "",
+            status=issue.fields.status.name if issue.fields.status else "",
+            assignee=issue.fields.assignee.displayName if issue.fields.assignee else None,
+            reporter=issue.fields.reporter.displayName if issue.fields.reporter else None
+        )
+        
+    except JIRAError as e:
+        if e.status_code == 404:
+            raise HTTPException(status_code=404, detail=f"JIRA ticket {ticket_id} not found")
+        elif e.status_code == 401:
+            raise HTTPException(status_code=401, detail="JIRA authentication failed")
+        elif e.status_code == 403:
+            raise HTTPException(status_code=403, detail=f"Access denied to JIRA ticket {ticket_id}")
+        else:
+            raise HTTPException(status_code=400, detail=f"JIRA API error: {e.status_code} - {e.text}")
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"JIRA API error: {str(e)}")
+        logger.error(f"Error fetching JIRA ticket {ticket_id}: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to fetch JIRA ticket: {str(e)}")
 
 async def test_gitlab_connection() -> Dict[str, Any]:
     """Test GitLab connection using environment configuration"""
