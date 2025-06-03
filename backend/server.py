@@ -512,28 +512,97 @@ async def fetch_repository_contents() -> List[Dict[str, Any]]:
     headers = {"Authorization": f"Bearer {GITLAB_API_TOKEN}"}
     all_files = []
     
+    def should_exclude_path(file_path: str) -> bool:
+        """Check if a file path should be excluded based on filtering rules"""
+        # Normalize path separators
+        normalized_path = file_path.replace('\\', '/')
+        
+        # Extract directory parts and filename
+        path_parts = normalized_path.split('/')
+        filename = path_parts[-1] if path_parts else ''
+        
+        # Exclusion rules:
+        # 1. Files under config/ directory
+        if any(part == 'config' for part in path_parts[:-1]):  # config directory anywhere in path
+            return True
+        
+        # 2. Files starting with 'watch'
+        if filename.startswith('watch'):
+            return True
+            
+        # 3. Files starting with 'Dockerfile'
+        if filename.startswith('Dockerfile'):
+            return True
+            
+        # 4. Files under playbook/ or handlers/ directories
+        if any(part in ['playbook', 'handlers'] for part in path_parts[:-1]):
+            return True
+            
+        return False
+    
+    def is_relevant_file(file_path: str) -> bool:
+        """Check if a file is relevant for processing (Ansible, Python, etc.)"""
+        if should_exclude_path(file_path):
+            return False
+            
+        # Include files with relevant extensions or in relevant directories
+        return (file_path.endswith(('.yml', '.yaml', '.py')) or 
+                any(dir_name in file_path for dir_name in ['tasks/', 'vars/', 'templates/', 'meta/', 'defaults/']))
+    
     async with httpx.AsyncClient(timeout=60.0) as client:
-        # Get repository tree
+        # Get repository tree recursively
         url = f"{GITLAB_URL}/api/v4/projects/{GITLAB_REPOSITORY_PATH.replace('/', '%2F')}/repository/tree"
         params = {"ref": GITLAB_BRANCH, "recursive": "true", "per_page": "100"}
         
-        response = await client.get(url, headers=headers, params=params)
-        if response.status_code != 200:
-            raise HTTPException(status_code=400, detail=f"Failed to fetch repository tree: {response.text}")
+        # Handle pagination for large repositories
+        page = 1
+        all_tree_items = []
         
-        tree = response.json()
+        while True:
+            params["page"] = page
+            response = await client.get(url, headers=headers, params=params)
+            if response.status_code != 200:
+                raise HTTPException(status_code=400, detail=f"Failed to fetch repository tree: {response.text}")
+            
+            tree_page = response.json()
+            if not tree_page:  # No more items
+                break
+                
+            all_tree_items.extend(tree_page)
+            
+            # Check if there are more pages (GitLab returns up to 100 items per page)
+            if len(tree_page) < 100:
+                break
+            page += 1
         
-        # Filter for Ansible and Python files
+        logger.info(f"Found {len(all_tree_items)} total items in repository")
+        
+        # Filter for relevant files (blobs) and include all recursive trees
         relevant_files = []
-        for item in tree:
-            if item["type"] == "blob":
-                file_path = item["path"]
-                if (file_path.endswith(('.yml', '.yaml')) or 
-                    file_path.endswith('.py') or
-                    'tasks/' in file_path or 
-                    'handlers/' in file_path or
-                    'vars/' in file_path):
+        processed_trees = set()
+        
+        for item in all_tree_items:
+            item_path = item["path"]
+            item_type = item["type"]
+            
+            # Process all blobs (files) - not just immediate level
+            if item_type == "blob":
+                if is_relevant_file(item_path):
                     relevant_files.append(item)
+                    logger.debug(f"Including file: {item_path}")
+                else:
+                    logger.debug(f"Excluding file: {item_path}")
+            
+            # Also process trees (directories) to ensure we don't miss nested structures
+            elif item_type == "tree":
+                if not should_exclude_path(item_path + "/"):  # Add trailing slash for directory check
+                    processed_trees.add(item_path)
+                    logger.debug(f"Including directory: {item_path}")
+                else:
+                    logger.debug(f"Excluding directory: {item_path}")
+        
+        logger.info(f"Found {len(relevant_files)} relevant files after filtering")
+        logger.info(f"Processed {len(processed_trees)} directories")
         
         # Fetch file contents
         for file_info in relevant_files:
@@ -544,18 +613,27 @@ async def fetch_repository_contents() -> List[Dict[str, Any]]:
                 file_response = await client.get(file_url, headers=headers, params=file_params)
                 if file_response.status_code == 200:
                     file_data = file_response.json()
-                    content = base64.b64decode(file_data["content"]).decode("utf-8")
+                    try:
+                        content = base64.b64decode(file_data["content"]).decode("utf-8")
+                    except UnicodeDecodeError:
+                        # Skip binary files
+                        logger.warning(f"Skipping binary file: {file_info['path']}")
+                        continue
                     
                     all_files.append({
                         "path": file_info["path"],
                         "content": content,
                         "size": file_data.get("size", 0)
                     })
+                    logger.debug(f"Successfully fetched: {file_info['path']}")
+                else:
+                    logger.warning(f"Failed to fetch {file_info['path']}: HTTP {file_response.status_code}")
                     
             except Exception as e:
                 logger.warning(f"Failed to fetch {file_info['path']}: {e}")
                 continue
     
+    logger.info(f"Successfully fetched {len(all_files)} files from repository")
     return all_files
 
 async def process_repository_background():
