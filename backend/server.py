@@ -64,6 +64,7 @@ JIRA_API_TOKEN = os.getenv("JIRA_API_TOKEN")
 # Global clients
 qdrant_client_instance = None
 embedding_model = None
+jira_client = None
 
 # Pydantic models
 class GitLabConfig(BaseModel):
