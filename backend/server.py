@@ -125,7 +125,7 @@ processing_status = ProcessingStatus(status="idle", message="Ready to process re
 @app.on_event("startup")
 async def startup_event():
     """Initialize clients on startup"""
-    global qdrant_client_instance, embedding_model
+    global qdrant_client_instance, embedding_model, jira_client
     global qdrant_client, SentenceTransformer, Distance, VectorParams, PointStruct
     
     try:
@@ -142,6 +142,36 @@ async def startup_event():
         # Initialize Qdrant client (in-memory mode)
         qdrant_client_instance = qdrant_client.QdrantClient(":memory:")
         logger.info("Connected to Qdrant (in-memory)")
+        
+        # Initialize JIRA client
+        if JIRA_BASE_URL and JIRA_API_TOKEN:
+            try:
+                # Try token authentication first (recommended for enterprise)
+                jira_client = JIRA(
+                    server=JIRA_BASE_URL,
+                    token_auth=JIRA_API_TOKEN,
+                    options={'verify': True}
+                )
+                logger.info("JIRA client initialized with token authentication")
+            except Exception as e:
+                # Fallback to basic auth if username is provided
+                if JIRA_USERNAME:
+                    try:
+                        jira_client = JIRA(
+                            server=JIRA_BASE_URL,
+                            basic_auth=(JIRA_USERNAME, JIRA_API_TOKEN),
+                            options={'verify': True}
+                        )
+                        logger.info("JIRA client initialized with basic authentication (fallback)")
+                    except Exception as e2:
+                        logger.warning(f"JIRA client initialization failed with both token and basic auth: {e2}")
+                        jira_client = None
+                else:
+                    logger.warning(f"JIRA client initialization with token auth failed: {e}")
+                    jira_client = None
+        else:
+            logger.warning("JIRA credentials not configured")
+            jira_client = None
         
         # Use a simple embedding approach for now
         try:
