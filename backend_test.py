@@ -2,10 +2,23 @@ import requests
 import unittest
 import sys
 import time
+import json
+import logging
 from datetime import datetime
+from dotenv import load_dotenv
+
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
+
+# Load environment variables
+load_dotenv("backend/.env")
 
 class RAGCodeAssistantTester:
-    def __init__(self, base_url="https://43b029a8-7288-44c5-8d1e-011c5aa4a2e1.preview.emergentagent.com"):
+    def __init__(self, base_url="http://0.0.0.0:8001"):
         self.base_url = base_url
         self.tests_run = 0
         self.tests_passed = 0
