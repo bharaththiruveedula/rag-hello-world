@@ -251,25 +251,56 @@ async def test_ollama_connection():
         return {"status": "error", "message": str(e)}
 
 async def test_jira_connection() -> Dict[str, Any]:
-    """Test JIRA connection"""
-    if not all([JIRA_BASE_URL, JIRA_USERNAME, JIRA_API_TOKEN]):
+    """Test JIRA connection using JIRA client"""
+    global jira_client
+    
+    if not JIRA_BASE_URL or not JIRA_API_TOKEN:
         return {"status": "error", "message": "JIRA credentials not configured in environment"}
     
-    try:
-        auth = (JIRA_USERNAME, JIRA_API_TOKEN)
-        async with httpx.AsyncClient(timeout=30.0) as client:
-            response = await client.get(f"{JIRA_BASE_URL}/rest/api/3/myself", auth=auth)
-            if response.status_code == 200:
-                user_info = response.json()
-                return {
-                    "status": "connected",
-                    "user": user_info.get("displayName"),
-                    "account_id": user_info.get("accountId")
-                }
+    # If jira_client is not initialized, try to initialize it
+    if jira_client is None:
+        try:
+            # Try token authentication first (recommended for enterprise)
+            jira_client = JIRA(
+                server=JIRA_BASE_URL,
+                token_auth=JIRA_API_TOKEN,
+                options={'verify': True}
+            )
+            logger.info("JIRA client initialized with token authentication during test")
+        except Exception as e:
+            # Fallback to basic auth if username is provided
+            if JIRA_USERNAME:
+                try:
+                    jira_client = JIRA(
+                        server=JIRA_BASE_URL,
+                        basic_auth=(JIRA_USERNAME, JIRA_API_TOKEN),
+                        options={'verify': True}
+                    )
+                    logger.info("JIRA client initialized with basic authentication during test")
+                except Exception as e2:
+                    return {"status": "error", "message": f"JIRA client initialization failed: {str(e2)}"}
             else:
-                return {"status": "error", "message": f"JIRA authentication failed: {response.status_code}"}
+                return {"status": "error", "message": f"JIRA token authentication failed: {str(e)}"}
+    
+    try:
+        # Test the connection by getting current user information
+        current_user = jira_client.current_user()
+        
+        return {
+            "status": "connected",
+            "user": current_user.get("displayName", "Unknown"),
+            "account_id": current_user.get("accountId", "Unknown"),
+            "auth_method": "token_auth" if not JIRA_USERNAME else "basic_auth"
+        }
+        
+    except JIRAError as e:
+        error_msg = f"JIRA API error: {e.status_code} - {e.text}"
+        logger.error(error_msg)
+        return {"status": "error", "message": error_msg}
     except Exception as e:
-        return {"status": "error", "message": str(e)}
+        error_msg = f"JIRA connection error: {str(e)}"
+        logger.error(error_msg)
+        return {"status": "error", "message": error_msg}
 
 async def fetch_jira_ticket(ticket_id: str) -> Optional[JiraTicketInfo]:
     """Fetch JIRA ticket information"""
