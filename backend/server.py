@@ -62,7 +62,7 @@ GITLAB_BRANCH = os.getenv("GITLAB_BRANCH", "main")
 
 # JIRA Configuration
 JIRA_BASE_URL = os.getenv("JIRA_BASE_URL")
-JIRA_USERNAME = os.getenv("JIRA_USERNAME")
+JIRA_USERNAME = os.getenv("JIRA_USERNAME")  # Optional - for basic auth fallback
 JIRA_API_TOKEN = os.getenv("JIRA_API_TOKEN")
 
 # Global clients
