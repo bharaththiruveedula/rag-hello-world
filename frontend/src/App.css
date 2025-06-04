@@ -684,6 +684,41 @@ body {
   color: var(--gray-700);
 }
 
+.code-block-marker {
+  color: var(--gray-500);
+  font-style: italic;
+}
+
+.diff-added {
+  background: #e6ffed;
+  color: #22863a;
+  padding: 0 4px;
+  margin: var(--space-sm) 0;
+  border-left: 3px solid #34d058;
+}
+
+.diff-removed {
+  background: #ffeef0;
+  color: #b31d28;
+  padding: 0 4px;
+  margin: var(--space-sm) 0;
+  border-left: 3px solid #d73a49;
+}
+
+.diff-meta {
+  color: #6a737d;
+  font-style: italic;
+  margin: var(--space-sm) 0;
+}
+
+.diff-hunk {
+  background: #f1f8ff;
+  color: #005cc5;
+  padding: 0 4px;
+  margin: var(--space-sm) 0;
+  font-weight: 600;
+}
+
 /* Context Chunks */
 .context-chunks {
   margin-top: var(--space-xl);

@@ -369,11 +369,30 @@ function App() {
         
         <div className="suggestion-content">
           <div className="suggestion-text">
-            {suggestions.suggestion.split('\n').map((line, index) => (
-              <div key={index} className={line.startsWith('```') ? 'code-block' : 'text-line'}>
-                {line}
-              </div>
-            ))}
+            {suggestions.suggestion.split('\n').map((line, index) => {
+              let lineClass = 'text-line';
+              if (line.startsWith('```')) {
+                lineClass = 'code-block-marker';
+              } else if (line.startsWith('+')) {
+                lineClass = 'diff-added';
+              } else if (line.startsWith('-')) {
+                lineClass = 'diff-removed';
+              } else if (line.startsWith('@@')) {
+                lineClass = 'diff-hunk';
+              } else if (
+                line.startsWith('diff') ||
+                line.startsWith('index') ||
+                line.startsWith('---') ||
+                line.startsWith('+++')
+              ) {
+                lineClass = 'diff-meta';
+              }
+              return (
+                <div key={index} className={lineClass}>
+                  {line}
+                </div>
+              );
+            })}
           </div>
         </div>
         
